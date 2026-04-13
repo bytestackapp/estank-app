@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script defer src="/_vercel/insights/script.js"></script>
+    <title>Transport Saddle MTO Estimator</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-solid: #667eea;
+            --primary-hover: #5a6fd8;
+            --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #f7fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Background animation */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; bottom: 20%; left: 20%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+		.header-title {
+			font-size: 2rem;
+			font-weight: 700;
+			background: var(--primary);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 0.5rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.header-icon {
+			width: 2.4rem;
+			height: 2.4rem;
+			flex-shrink: 0;
+			fill: currentColor;
+			display: block;
+			margin-top: 0.4rem;
+			margin-right: 0.5rem;
+		}
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .wizard-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 50%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ff9a9e;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: #ff9a9e;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .input-group input:valid,
+        .input-group select:valid {
+            border-color: #48bb78;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 2.2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Shape Type Fields Styling */
+        .shape-type-fields {
+            display: none;
+            background: rgba(247, 250, 252, 0.8);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .shape-type-fields.show {
+            display: block;
+        }
+
+        .shape-type-fields .form-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .saddle-result {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .saddle-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .component-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .component-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .component-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .material-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .material-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .material-item::before {
+            content: "📋";
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: var(--primary-solid);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-solid);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-solid);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .saddle-info {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 1px solid #81e6d9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .saddle-info h3 {
+            color: #234e52;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .saddle-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .spec-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #81e6d9;
+        }
+
+        .spec-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38b2ac;
+        }
+
+        .spec-label {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+			<h1 class="header-title">
+				<img src="icon\saddle-bg.svg" alt="Tool icon" class="header-icon">		
+				Transport Saddle MTO Estimator
+			</h1>
+            <p class="header-subtitle">Professional tool for calculating transport saddle structural components with precision</p>
+        </div>
+
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" id="step1Indicator">
+                    <span>📝</span>
+                    <span>Saddle Parameters</span>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <span>📋</span>
+                    <span>Component List</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Parameters -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📜 Tank Specification</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="tankDiameter">Tank Diameter</label>
+                            <input type="number" id="tankDiameter" placeholder="10000" value="10000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="rawPlateWidth">Shell Plate Width</label>
+                            <input type="number" id="rawPlateWidth" placeholder="1829" value="1829" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="rawPlateLength">Shell Plate Length</label>
+                            <input type="number" id="rawPlateLength" placeholder="6096" value="6096" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🧪 Material Specification</span>
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="basicMaterial">Base Material</label>
+                            <input type="text" id="basicMaterial" placeholder="CS" value="CS" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="materialSpec">Material Specification</label>
+                            <input type="text" id="materialSpec" placeholder="ASTM A36" value="ASTM A36" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="materialDescription">Material Shape</label>
+                            <select id="materialDescription" required onchange="updateShapeFields()">
+                                <option value="">-- Select Shape --</option>
+                                <option value="H-SHAPE">H-SHAPE</option>
+                                <option value="C-SHAPE">C-SHAPE</option>
+                                <option value="WT-SHAPE">WT-SHAPE</option>
+                                <option value="L-SHAPE">L-SHAPE</option>
+                                <option value="CHS">CHS</option>
+                                <option value="RHS">RHS</option>
+                            </select>
+                        </div>
+						<div class="input-group">
+                            <label for="saddleQuantity">Saddle Quantity</label>
+                            <input type="number" id="saddleQuantity" value="1" required>
+                        </div>
+                    </div>
+
+                    <!-- L-SHAPE -->
+                    <div id="fieldsL" class="shape-type-fields">
+                        <div class="section-title">
+                            <span>L-Shape Dimensions</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="lLegA">Leg A</label>
+                                <input type="number" id="lLegA" value="75">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="lLegB">Leg B</label>
+                                <input type="number" id="lLegB" value="75">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="lThickness">Thickness</label>
+                                <input type="number" id="lThickness" value="6">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- H-SHAPE -->
+                    <div id="fieldsH" class="shape-type-fields">
+                        <div class="section-title">
+                            <span>H-Shape Dimensions</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="hDepth">Depth</label>
+                                <input type="number" id="hDepth" value="150">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="hFlangeWidth">Flange Width</label>
+                                <input type="number" id="hFlangeWidth" value="75">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="hWebThickness">Web Thickness</label>
+                                <input type="number" id="hWebThickness" value="5">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="hFlangeThickness">Flange Thickness</label>
+                                <input type="number" id="hFlangeThickness" value="7">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- C-SHAPE -->
+                    <div id="fieldsC" class="shape-type-fields">
+                        <div class="section-title">
+                            <span>C-Shape Dimensions</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="cDepth">Depth</label>
+                                <input type="number" id="cDepth" value="200">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="cFlangeWidth">Flange Width</label>
+                                <input type="number" id="cFlangeWidth" value="75">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="cWebThickness">Web Thickness</label>
+                                <input type="number" id="cWebThickness" value="6">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="cFlangeThickness">Flange Thickness</label>
+                                <input type="number" id="cFlangeThickness" value="7.5">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WT-SHAPE -->
+                    <div id="fieldsWT" class="shape-type-fields">
+                        <div class="section-title">
+                            <span>WT-Shape Dimensions</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="wtDepth">Depth</label>
+                                <input type="number" id="wtDepth" value="75">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="wtFlangeWidth">Flange Width</label>
+                                <input type="number" id="wtFlangeWidth" value="75">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="wtWebThickness">Web Thickness</label>
+                                <input type="number" id="wtWebThickness" value="5">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="wtFlangeThickness">Flange Thickness</label>
+                                <input type="number" id="wtFlangeThickness" value="7">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CHS -->
+                    <div id="fieldsCHS" class="shape-type-fields">
+                        <div class="section-title">
+                            <span>CHS Dimensions</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="chsDiameter">Outside Diameter</label>
+                                <input type="number" id="chsDiameter" value="100">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="chsThickness">Thickness</label>
+                                <input type="number" id="chsThickness" value="5">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RHS -->
+                    <div id="fieldsRHS" class="shape-type-fields">
+                        <div class="section-title">
+                            <span>RHS Dimensions</span>
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="rhsDepth">Depth</label>
+                                <input type="number" id="rhsDepth" value="100">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="rhsWidth">Width</label>
+                                <input type="number" id="rhsWidth" value="50">
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div class="input-group">
+                                <label for="rhsThickness">Thickness</label>
+                                <input type="number" id="rhsThickness" value="4">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="calculateSaddle()">
+                        <span>Calculate MTO</span>
+                        <div class="loading-spinner" id="loadingStep1"></div>
+                    </button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Results -->
+            <div class="step-content" id="step2">
+                <div id="saddleInfo"></div>
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="results-section" id="results"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateShapeFields() {
+            const type = document.getElementById("materialDescription").value;
+            document.querySelectorAll(".shape-type-fields").forEach(el => el.classList.remove('show'));
+            
+            if (type === "L-SHAPE") document.getElementById("fieldsL").classList.add('show');
+            else if (type === "H-SHAPE") document.getElementById("fieldsH").classList.add('show');
+            else if (type === "C-SHAPE") document.getElementById("fieldsC").classList.add('show');
+            else if (type === "WT-SHAPE") document.getElementById("fieldsWT").classList.add('show');
+            else if (type === "CHS") document.getElementById("fieldsCHS").classList.add('show');
+            else if (type === "RHS") document.getElementById("fieldsRHS").classList.add('show');
+        }
+
+        function getShapeDescription() {
+            const type = document.getElementById("materialDescription").value;
+			const basicMaterial = document.getElementById('basicMaterial').value;
+			const materialSpec = document.getElementById('materialSpec').value;
+            let description = type;
+            
+            switch(type) {
+                case "L-SHAPE":
+                    const legA = document.getElementById("lLegA").value;
+                    const legB = document.getElementById("lLegB").value;
+                    const lThickness = document.getElementById("lThickness").value;
+					const equality = legA === legB ? 'EQUAL' : 'UNEQUAL';					
+                    description = `L ${legA}MM X ${legB}MM X ${lThickness}MM, ANGLE BAR, ${basicMaterial}, ${equality}, ${materialSpec}`;
+                    break;
+                case "H-SHAPE":
+                    const hDepth = document.getElementById("hDepth").value;
+                    const hFlangeWidth = document.getElementById("hFlangeWidth").value;
+                    const hWebThickness = document.getElementById("hWebThickness").value;
+                    const hFlangeThickness = document.getElementById("hFlangeThickness").value;
+                    description = `H ${hDepth}MM X ${hFlangeWidth}MM X ${hWebThickness}MM X ${hFlangeThickness}MM, BEAM, ${basicMaterial}, H SHAPE, ${materialSpec}`;
+                    break;
+                case "C-SHAPE":
+                    const cDepth = document.getElementById("cDepth").value;
+                    const cFlangeWidth = document.getElementById("cFlangeWidth").value;
+                    const cWebThickness = document.getElementById("cWebThickness").value;
+                    const cFlangeThickness = document.getElementById("cFlangeThickness").value;
+                    description = `C ${cDepth}MM X ${cFlangeWidth}MM X ${cWebThickness}MM X ${cFlangeThickness}MM, CHANNEL, ${basicMaterial}, ${materialSpec}`;
+                    break;
+                case "WT-SHAPE":
+                    const wtDepth = document.getElementById("wtDepth").value;
+                    const wtFlangeWidth = document.getElementById("wtFlangeWidth").value;
+                    const wtWebThickness = document.getElementById("wtWebThickness").value;
+                    const wtFlangeThickness = document.getElementById("wtFlangeThickness").value;
+                    description = `WT ${wtDepth}MM X ${wtFlangeWidth}MM X ${wtWebThickness}MM X ${wtFlangeThickness}MM, WT BEAM, ${basicMaterial}, ${materialSpec}`;
+                    break;
+                case "CHS":
+                    const chsDiameter = document.getElementById("chsDiameter").value;
+                    const chsThickness = document.getElementById("chsThickness").value;
+                    description = `CHS ${chsDiameter}MM DIA X ${chsThickness}MM THK, CHS, ${basicMaterial}, ${materialSpec}`;
+                    break;
+                case "RHS":
+                    const rhsDepth = document.getElementById("rhsDepth").value;
+                    const rhsWidth = document.getElementById("rhsWidth").value;
+                    const rhsThickness = document.getElementById("rhsThickness").value;
+                    description = `RHS ${rhsDepth}MM X ${rhsWidth}MM X ${rhsThickness}MM, RHS, ${basicMaterial}, ${materialSpec}`;
+                    break;
+                default:
+                    description = type;
+            }
+            
+            return description;
+        }
+
+		// Material density constants (kg/m³)
+		const MATERIAL_DENSITIES = {
+			'CS': 7850, // Carbon Steel
+			'SS': 8000, // Stainless Steel
+			'AL': 2700  // Aluminum
+		};
+		
+		// Shape calculation functions
+		function calculateShapeProperties(type, dimensions) {
+			let area = 0; // mm²
+			let perimeter = 0; // mm
+			
+			switch(type) {
+				case "L-SHAPE":
+					const legA = dimensions.legA;
+					const legB = dimensions.legB;
+					const thickness = dimensions.thickness;
+					area = (legA * thickness) + (legB * thickness) - (thickness * thickness);
+					perimeter = 2 * (legA + legB);
+					break;
+					
+				case "H-SHAPE":
+					const hDepth = dimensions.depth;
+					const hFlangeWidth = dimensions.flangeWidth;
+					const hWebThickness = dimensions.webThickness;
+					const hFlangeThickness = dimensions.flangeThickness;
+					area = (2 * hFlangeWidth * hFlangeThickness) + ((hDepth - 2 * hFlangeThickness) * hWebThickness);
+					perimeter = (4 * hFlangeWidth) + (2 * hDepth) - (2 * hWebThickness);
+					break;
+					
+				case "C-SHAPE":
+					const cDepth = dimensions.depth;
+					const cFlangeWidth = dimensions.flangeWidth;
+					const cWebThickness = dimensions.webThickness;
+					const cFlangeThickness = dimensions.flangeThickness;
+					area = (2 * cFlangeWidth * cFlangeThickness) + ((cDepth - 2 * cFlangeThickness) * cWebThickness);
+					perimeter = (4 * cFlangeWidth) + (2 * cDepth) - (2 * cWebThickness);
+					break;
+					
+				case "WT-SHAPE":
+					const wtDepth = dimensions.depth;
+					const wtFlangeWidth = dimensions.flangeWidth;
+					const wtWebThickness = dimensions.webThickness;
+					const wtFlangeThickness = dimensions.flangeThickness;
+					area = (wtFlangeWidth * wtFlangeThickness) + ((wtDepth - wtFlangeThickness) * wtWebThickness);
+					perimeter = 2 * (wtDepth + wtFlangeWidth);
+					break;
+					
+				case "CHS":
+					const chsDiameter = dimensions.diameter;
+					const chsThickness = dimensions.thickness;
+					const outerRadius = chsDiameter / 2;
+					const innerRadius = outerRadius - chsThickness;
+					area = Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+					perimeter = Math.PI * chsDiameter;
+					break;
+					
+				case "RHS":
+					const rhsDepth = dimensions.depth;
+					const rhsWidth = dimensions.width;
+					const rhsThickness = dimensions.thickness;
+					const outerArea = rhsDepth * rhsWidth;
+					const innerArea = (rhsDepth - 2 * rhsThickness) * (rhsWidth - 2 * rhsThickness);
+					area = outerArea - innerArea;
+					perimeter = 2 * (rhsDepth + rhsWidth);
+					break;
+			}
+			
+			return { area, perimeter };
+		}
+		
+		function getCurrentShapeDimensions() {
+			const type = document.getElementById("materialDescription").value;
+			let dimensions = {};
+			
+			switch(type) {
+				case "L-SHAPE":
+					dimensions = {
+						legA: parseFloat(document.getElementById("lLegA").value) || 0,
+						legB: parseFloat(document.getElementById("lLegB").value) || 0,
+						thickness: parseFloat(document.getElementById("lThickness").value) || 0
+					};
+					break;
+				case "H-SHAPE":
+					dimensions = {
+						depth: parseFloat(document.getElementById("hDepth").value) || 0,
+						flangeWidth: parseFloat(document.getElementById("hFlangeWidth").value) || 0,
+						webThickness: parseFloat(document.getElementById("hWebThickness").value) || 0,
+						flangeThickness: parseFloat(document.getElementById("hFlangeThickness").value) || 0
+					};
+					break;
+				case "C-SHAPE":
+					dimensions = {
+						depth: parseFloat(document.getElementById("cDepth").value) || 0,
+						flangeWidth: parseFloat(document.getElementById("cFlangeWidth").value) || 0,
+						webThickness: parseFloat(document.getElementById("cWebThickness").value) || 0,
+						flangeThickness: parseFloat(document.getElementById("cFlangeThickness").value) || 0
+					};
+					break;
+				case "WT-SHAPE":
+					dimensions = {
+						depth: parseFloat(document.getElementById("wtDepth").value) || 0,
+						flangeWidth: parseFloat(document.getElementById("wtFlangeWidth").value) || 0,
+						webThickness: parseFloat(document.getElementById("wtWebThickness").value) || 0,
+						flangeThickness: parseFloat(document.getElementById("wtFlangeThickness").value) || 0
+					};
+					break;
+				case "CHS":
+					dimensions = {
+						diameter: parseFloat(document.getElementById("chsDiameter").value) || 0,
+						thickness: parseFloat(document.getElementById("chsThickness").value) || 0
+					};
+					break;
+				case "RHS":
+					dimensions = {
+						depth: parseFloat(document.getElementById("rhsDepth").value) || 0,
+						width: parseFloat(document.getElementById("rhsWidth").value) || 0,
+						thickness: parseFloat(document.getElementById("rhsThickness").value) || 0
+					};
+					break;
+			}
+			
+			return dimensions;
+		}		
+		
+		
+		
+		
+		
+        let currentStep = 1;
+        let calculationResults = [];
+
+        function updateProgress() {
+            const progress = (currentStep / 2) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Hide all step indicators
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            // Show target step
+            document.getElementById(`step${step}`).classList.add('active', 'fade-in');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}Indicator`).classList.add('completed');
+            }
+
+            currentStep = step;
+            updateProgress();
+        }
+
+        function showLoading(stepId) {
+            document.getElementById(`loading${stepId}`).style.display = 'inline-block';
+        }
+
+        function hideLoading(stepId) {
+            document.getElementById(`loading${stepId}`).style.display = 'none';
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = message;
+            
+            const currentStepEl = document.querySelector('.step-content.active');
+            currentStepEl.insertBefore(alertDiv, currentStepEl.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function calculateSaddle() {
+            showLoading('Step1');
+
+            const D = parseFloat(document.getElementById('tankDiameter').value);
+            const rawLength = parseFloat(document.getElementById('rawPlateLength').value);
+            const rawWidth = parseFloat(document.getElementById('rawPlateWidth').value);
+            const matDesc = getShapeDescription(); // Use the new function to get detailed description
+            const baseMat = document.getElementById('basicMaterial').value;
+            const matSpec = document.getElementById('materialSpec').value;
+			const saddleQty = parseFloat(document.getElementById('saddleQuantity').value);
+
+			
+            if (isNaN(D) || isNaN(rawLength) || isNaN(rawWidth)) {
+                hideLoading('Step1');
+                showError('Please fill in all required numeric fields with valid numbers.');
+                return;
+            }
+
+            if (D <= 0 || rawLength <= 0 || rawWidth <= 0) {
+                hideLoading('Step1');
+                showError('All numeric values must be greater than zero.');
+                return;
+            }
+
+            if (!document.getElementById('materialDescription').value || !baseMat || !matSpec) {
+                hideLoading('Step1');
+                showError('Please fill in all material specification fields.');
+                return;
+            }
+
+            // Simulate calculation delay
+            setTimeout(() => {
+                // Calculate Frame Length (same logic as original)
+                const tankradius = D / 2;
+                const theta = (rawLength / tankradius); // in radian
+                const chordlength = tankradius * Math.sqrt(2 - 2 * Math.cos(theta));
+                const frameLength = chordlength - 250 - 250;
+                
+                // Calculate Frame Width
+                const frameWidth = rawWidth - 250 - 250;
+                
+                // Calculate Curved Frame Length
+                const X = frameLength / 2;
+                const H = Math.sqrt(tankradius ** 2 - X ** 2);
+                const Y = tankradius - H;
+                const newtheta = 2 * Math.asin(X / tankradius); // new central angle in radians
+                const curvedFrameLength = tankradius * newtheta;
+
+                // Frame Legs
+                const totalHeight = tankradius + 100;
+                const ribDistA = (frameLength / 5) * 0.5;
+                const ribAngleA = Math.asin(ribDistA / tankradius);
+                const ribHeightA = totalHeight - (ribDistA / Math.tan(ribAngleA));
+          
+                const ribDistB = (frameLength / 5) * 1.5;
+                const ribAngleB = Math.asin(ribDistB / tankradius);
+                const ribHeightB = totalHeight - (ribDistB / Math.tan(ribAngleB));
+
+                const ribDistC = (frameLength / 5) * 2.5;
+                const ribAngleC = Math.asin(ribDistC / tankradius);
+                const ribHeightC = totalHeight - (ribDistC / Math.tan(ribAngleC));
+
+                // Generate saddle info
+                const saddleInfoHTML = `
+                    <div class="saddle-info">
+                        <h3>Calculated Saddle Configuration</h3>
+                        <div class="saddle-specs">
+                            <div class="spec-item">
+                                <div class="spec-value">${D}</div>
+                                <div class="spec-label">Tank Diameter (mm)</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-value">${Math.round(frameLength)}</div>
+                                <div class="spec-label">Frame Length (mm)</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-value">${Math.round(frameWidth)}</div>
+                                <div class="spec-label">Frame Width (mm)</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+				
+				// Get shape properties for calculations
+				const shapeType = document.getElementById("materialDescription").value;
+				const shapeDimensions = getCurrentShapeDimensions();
+				const shapeProps = calculateShapeProperties(shapeType, shapeDimensions);
+				const materialDensity = MATERIAL_DENSITIES[baseMat] || 7850; // Default to CS if unknown
+				
+				// Calculate weight and surface area for each component
+				let totalWeight = 0; // kg
+				let totalSurfaceArea = 0; // m²
+				
+                calculationResults = [
+                    {
+                        component: 'Bottom Frame',
+                        materials: [
+                            {
+							quantity: saddleQty * 2, 
+							description: `${matDesc} - ${Math.round(frameLength)}MM LENGTH`,
+							length: frameLength,
+							weight: (shapeProps.area * frameLength * materialDensity / 1000000000) * (saddleQty * 2), // Convert mm³ to m³ then to kg
+							surfaceArea: (shapeProps.perimeter * frameLength / 1000000) * (saddleQty * 2) // Convert mm² to m²
+							},
+                            {
+							quantity: saddleQty * 7,
+							description: `${matDesc} - ${Math.round(frameWidth)}MM LENGTH`,
+							length: frameWidth,
+							weight: (shapeProps.area * frameWidth * materialDensity / 1000000000) * (saddleQty * 7),
+							surfaceArea: (shapeProps.perimeter * frameWidth / 1000000) * (saddleQty * 7)
+							}
+                        ]
+                    },
+                    {
+                        component: 'Top Frame',
+                        materials: [
+                            {
+							quantity: saddleQty * 2,
+							description: `${matDesc} - ${Math.round(curvedFrameLength)}MM LENGTH`,
+							length: curvedFrameLength,
+							weight: (shapeProps.area * curvedFrameLength * materialDensity / 1000000000) * (saddleQty * 2),
+							surfaceArea: (shapeProps.perimeter * curvedFrameLength / 1000000) * (saddleQty * 2)
+							},
+							{ 
+							quantity: saddleQty * 7, 
+							description: `${matDesc} - ${Math.round(frameWidth)}MM LENGTH`,
+							length: frameWidth,
+							weight: (shapeProps.area * frameWidth * materialDensity / 1000000000) * (saddleQty * 7),
+							surfaceArea: (shapeProps.perimeter * frameWidth / 1000000) * (saddleQty * 7)
+							}
+                        ]
+                    },
+                    {
+                        component: 'Frame Legs',
+                        materials: [
+							{ 
+							quantity: saddleQty * 2, 
+							description: `${matDesc} - 100MM LENGTH`,
+							length: 100,
+							weight: (shapeProps.area * 100 * materialDensity / 1000000000) * (saddleQty * 2),
+							surfaceArea: (shapeProps.perimeter * 100 / 1000000) * (saddleQty * 2)
+							},
+							{ 
+							quantity: saddleQty * 4, 
+							description: `${matDesc} - ${Math.round(ribHeightA)}MM LENGTH`,
+							length: ribHeightA,
+							weight: (shapeProps.area * ribHeightA * materialDensity / 1000000000) * (saddleQty * 4),
+							surfaceArea: (shapeProps.perimeter * ribHeightA / 1000000) * (saddleQty * 4)
+							},
+							{ 
+							quantity: saddleQty * 4, 
+							description: `${matDesc} - ${Math.round(ribHeightB)}MM LENGTH`,
+							length: ribHeightB,
+							weight: (shapeProps.area * ribHeightB * materialDensity / 1000000000) * (saddleQty * 4),
+							surfaceArea: (shapeProps.perimeter * ribHeightB / 1000000) * (saddleQty * 4)
+							},
+							{ 
+							quantity: saddleQty * 4, 
+							description: `${matDesc} - ${Math.round(ribHeightC)}MM LENGTH`,
+							length: ribHeightC,
+							weight: (shapeProps.area * ribHeightC * materialDensity / 1000000000) * (saddleQty * 4),
+							surfaceArea: (shapeProps.perimeter * ribHeightC / 1000000) * (saddleQty * 4)
+							}
+                        ]
+                    }
+                ];
+
+					// Calculate totals
+					calculationResults.forEach(component => {
+					component.materials.forEach(material => {
+						totalWeight += material.weight;
+						totalSurfaceArea += material.surfaceArea;
+					});
+				});
+				
+                const totalComponents = calculationResults.length;
+                const totalItems = calculationResults.reduce((sum, comp) => 
+                    sum + comp.materials.reduce((s, m) => s + m.quantity, 0), 0);
+
+                displayResults(saddleInfoHTML, totalComponents, totalItems, totalWeight, totalSurfaceArea);
+                hideLoading('Step1');
+                goToStep(2);
+            }, 1000);
+        }
+
+		function displayResults(saddleInfoHTML, totalComponents, totalItems, totalWeight, totalSurfaceArea) {
+			// Saddle info
+			document.getElementById('saddleInfo').innerHTML = saddleInfoHTML;
+		
+			const saddleQty = parseFloat(document.getElementById('saddleQuantity').value)
+			
+			// Stats summary with weight and surface area (but keep original display layout)
+			const statsHTML = `
+				<div class="stat-card">
+					<div class="stat-value">${saddleQty}</div>
+					<div class="stat-label">Saddle Units</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalItems}</div>
+					<div class="stat-label">Total Items</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalWeight.toFixed(1)}</div>
+					<div class="stat-label">Total Weight (kg)</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalSurfaceArea.toFixed(1)}</div>
+					<div class="stat-label">Total S. Area (m2)</div>
+				</div>
+			`;
+		
+			// Results grid - keep original display format (no weight/area shown in list)
+			let resultsHTML = '<div class="results-grid">';
+			calculationResults.forEach(component => {
+				resultsHTML += `
+					<div class="saddle-result">
+						<div class="component-header">
+							<div class="component-title">${component.component}</div>
+							<div class="component-badge">Structural</div>
+						</div>
+						<ul class="material-list">
+				`;
+				
+				component.materials.forEach(material => {
+					resultsHTML += `
+						<li class="material-item">
+							<strong>${material.quantity} PCS</strong> - ${material.description}
+						</li>
+					`;
+				});
+				
+				resultsHTML += `
+						</ul>
+					</div>
+				`;
+			});
+			resultsHTML += '</div>';
+		
+			document.getElementById('statsSummary').innerHTML = statsHTML;
+			document.getElementById('results').innerHTML = resultsHTML;
+		}
+
+		function exportMTO() {
+			// Prepare data for export
+			const tankDiameter = document.getElementById('tankDiameter').value;
+			const materialShape = document.getElementById('materialDescription').value;
+			const basicMaterial = document.getElementById('basicMaterial').value;
+			const materialSpec = document.getElementById('materialSpec').value;
+			const saddleQty = document.getElementById('saddleQuantity').value;
+			
+			// Calculate totals
+			let totalWeight = 0;
+			let totalSurfaceArea = 0;
+			let totalItems = 0;
+			
+			calculationResults.forEach(component => {
+				component.materials.forEach(material => {
+					totalWeight += material.weight;
+					totalSurfaceArea += material.surfaceArea;
+					totalItems += material.quantity;
+				});
+			});
+			
+			// Create Excel-compatible CSV content
+			let csvContent = '';
+			
+			// Header section (retain from text format)
+			csvContent += 'TRANSPORT SADDLE MTO REPORT\n';
+			csvContent += `Generated,${new Date().toLocaleDateString()}\n`;
+			csvContent += '================================\n';
+			csvContent += '\n';
+			csvContent += 'PROJECT PARAMETERS:\n';
+			csvContent += `Tank Diameter,${tankDiameter} mm\n`;
+			csvContent += `Material Shape,${materialShape}\n`;
+			csvContent += `Base Material,${basicMaterial}\n`;
+			csvContent += `Material Spec,${materialSpec}\n`;
+			csvContent += `Saddle Quantity,${saddleQty}\n`;
+			csvContent += '\n';
+			csvContent += 'SUMMARY:\n';
+			csvContent += `Total Items,${totalItems}\n`;
+			csvContent += `Total Weight,${totalWeight.toFixed(2)} kg\n`;
+			csvContent += `Total Surface Area,${totalSurfaceArea.toFixed(2)} m2\n`;
+			csvContent += '\n';
+			csvContent += 'DETAILED MTO:\n';
+			csvContent += '================================\n';
+			csvContent += '\n';
+			
+			// Table headers for Excel
+			csvContent += 'Component,Quantity,Description,Length (mm),Weight (kg),Surface Area (m2)\n';
+			
+			// Data rows
+			calculationResults.forEach(component => {
+				component.materials.forEach(material => {
+					// Escape commas and quotes in description for CSV format
+					const escapedDescription = `"${material.description.replace(/"/g, '""')}"`;
+					csvContent += `${component.component},${material.quantity},${escapedDescription},${Math.round(material.length)},${material.weight.toFixed(3)},${material.surfaceArea.toFixed(3)}\n`;
+				});
+			});
+			
+			// Add totals row
+			csvContent += '\n';
+			csvContent += `TOTALS,${totalItems},"All Components",,${totalWeight.toFixed(2)},${totalSurfaceArea.toFixed(2)}\n`;
+			
+			// Create and download Excel file
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `Transport_Saddle_MTO_${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+			
+			alert('MTO report exported successfully as Excel file!');
+		}
+
+        // Initialize progress bar
+        updateProgress();
+
+        // Add smooth transitions
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-1px)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+
+                // Add input validation feedback
+                input.addEventListener('input', function() {
+                    if (this.type === 'number') {
+                        if (this.value && !isNaN(this.value) && parseFloat(this.value) > 0) {
+                            this.style.borderColor = '#48bb78';
+                        } else if (this.value) {
+                            this.style.borderColor = '#f56565';
+                        } else {
+                            this.style.borderColor = '#e2e8f0';
+                        }
+                    } else {
+                        if (this.value.trim()) {
+                            this.style.borderColor = '#48bb78';
+                        } else {
+                            this.style.borderColor = '#e2e8f0';
+                        }
+                    }
+                });
+
+                // Handle change event for select elements
+                input.addEventListener('change', function() {
+                    if (this.tagName === 'SELECT') {
+                        if (this.value) {
+                            this.style.borderColor = '#48bb78';
+                        } else {
+                            this.style.borderColor = '#ff9a9e';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

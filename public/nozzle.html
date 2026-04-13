@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script defer src="/_vercel/insights/script.js"></script>
+    <title>Tank Nozzle MTO Estimator</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			--primary-table: #764ba2;
+            --primary-solid: #667eea;
+            --primary-hover: #5a6fd8;
+            --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #f7fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Background animation */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; bottom: 20%; left: 20%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+		.header-title {
+			font-size: 2rem;
+			font-weight: 700;
+			background: var(--primary);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 0.5rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.header-icon {
+			width: 2.2rem;
+			height: 2.2rem;
+			flex-shrink: 0;
+			fill: currentColor;
+			display: block;
+			margin-top: 0.3rem;
+			margin-right: 0.5rem;
+		}
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .wizard-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 50%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ff9a9e;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: #ff9a9e;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .input-group input:valid,
+        .input-group select:valid {
+            border-color: #48bb78;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 2.2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-table-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .results-table th {
+            background: var(--primary-table);
+            color: white;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .results-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: var(--text-secondary);
+			text-align: center;
+        }
+		
+		.results-table td:nth-child(2),
+		.results-table th:nth-child(2) {
+			text-align: left;
+		}
+		
+        .results-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: var(--primary-solid);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-solid);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-solid);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .tank-info {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 1px solid #81e6d9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tank-info h3 {
+            color: #234e52;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .tank-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .spec-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #81e6d9;
+        }
+
+        .spec-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38b2ac;
+        }
+
+        .spec-label {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .results-table-container {
+                overflow-x: auto;
+            }
+
+            .results-table {
+                min-width: 600px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+			<h1 class="header-title">
+				<img src="icon\nozzle-bg.svg" alt="Tool icon" class="header-icon">		
+				Tank Nozzle MTO Estimator
+			</h1>
+            <p class="header-subtitle">Professional tool for calculating tank nozzle specifications with precision</p>
+        </div>
+
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" id="step1Indicator">
+                    <span>📝</span>
+                    <span>Tank Parameters</span>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <span>📋</span>
+                    <span>Nozzle List</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Parameters -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📜</span>
+                        Tank Specifications
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="tankDiameter">Tank Diameter</label>
+                            <input type="number" id="tankDiameter" placeholder="15000" value="15000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="roofType">Roof Type</label>
+                            <select id="roofType" required>
+                                <option value="">-- Select Roof Type --</option>
+                                <option value="FIXED">Fixed Roof</option>
+                                <option value="EFR">External Floating Roof</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="calculateNozzles()">
+                        <span>Generate Nozzle List</span>
+                        <div class="loading-spinner" id="loadingStep1"></div>
+                    </button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Results -->
+            <div class="step-content" id="step2">
+                <div id="tankInfo"></div>
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="results-section" id="results"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pipe outside diameter data (mm) based on schedule
+        const PIPE_OUTSIDE_DIAMETER = {
+            'Sch 160': {
+                0.5: 21.34, 0.75: 26.67, 1: 33.40
+            },
+            'Sch 80': {
+                1.25: 42.16, 1.5: 48.26, 2: 60.33, 2.5: 73.03, 3: 88.9, 4: 114.3, 5: 141.3, 6: 168.28, 8: 219.08
+            },
+            'Sch XS': {
+                10: 273.05, 12: 323.85, 14: 355.6, 16: 406.4, 18: 457.2, 20: 508.0, 24: 609.6
+            }
+        };
+
+        // Pipe wall thickness data (inches) based on schedule
+        const PIPE_WALL_THICKNESS = {
+            'Sch 160': {
+                0.5: 0.188, 0.75: 0.219, 1: 0.250
+            },
+            'Sch 80': {
+                1.25: 0.191, 1.5: 0.200, 2: 0.218, 2.5: 0.276, 3: 0.300, 4: 0.337, 5: 0.375, 6: 0.432, 8: 0.500
+            },
+            'Sch XS': {
+                10: 0.500, 12: 0.500, 14: 0.500, 16: 0.500, 18: 0.500, 20: 0.500, 24: 0.500
+            }
+        };
+        
+        // Flange weights (kg) - ANSI B16.5 150# RF flanges
+        const FLANGE_WEIGHTS = {
+            0.5: 0.58, 0.75: 0.86, 1: 1.23,
+            1.25: 1.53, 1.5: 1.96, 2: 2.93, 2.5: 4.61, 3: 5.55, 4: 7.85, 5: 10.06, 6: 12.62, 8: 20.94,
+            10: 27.72, 12: 41.89, 14: 55.07, 16: 67.94, 18: 77.10, 20: 94.74, 24: 128.32
+        };
+        
+        // Flange Take-Off (mm) for surface area calculation
+        const FLANGE_OUTER_DIAMETER = {
+            0.5: 47.63, 0.75: 52.39, 1: 55.56,
+            1.25: 57.15, 1.5: 61.91, 2: 63.5, 2.5: 69.85, 3: 69.85, 4: 76.2, 5: 88.9, 6: 88.9, 8: 101.6,
+            10: 101.6, 12: 114.3, 14: 127.0, 16: 127.0, 18: 139.7, 20: 144.46, 24: 152.4
+        };
+
+        // Flange Face diameters (mm) for surface area calculation
+        const FLANGE_TAKE_OFF = {
+            0.5: 88.9, 0.75: 98.43, 1: 107.95,
+            1.25: 117.48, 1.5: 127.0, 2: 152.4, 2.5: 177.8, 3: 190.5, 4: 228.6, 5: 254.0, 6: 279.4, 8: 342.9,
+            10: 406.4, 12: 482.6, 14: 533.4, 16: 596.9, 18: 635.0, 20: 698.5, 24: 812.8
+        };
+        
+        // Material density constants (kg/m3)
+        const MATERIAL_DENSITIES = {
+            'CS': 7850, // Carbon Steel
+            'SS': 8000, // Stainless Steel
+            'AL': 2700
+        };
+        
+        // Global variables for totals
+        let totalWeight = 0;
+        let totalSurfaceArea = 0;    
+    
+        let currentStep = 1;
+        let calculationResults = [];
+
+        function updateProgress() {
+            const progress = (currentStep / 2) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            document.getElementById('step' + step).classList.add('active', 'fade-in');
+            document.getElementById('step' + step + 'Indicator').classList.add('active');
+
+            for (let i = 1; i < step; i++) {
+                document.getElementById('step' + i + 'Indicator').classList.add('completed');
+            }
+
+            currentStep = step;
+            updateProgress();
+        }
+
+        function showLoading(stepId) {
+            document.getElementById('loading' + stepId).style.display = 'inline-block';
+        }
+
+        function hideLoading(stepId) {
+            document.getElementById('loading' + stepId).style.display = 'none';
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = message;
+            
+            const currentStepEl = document.querySelector('.step-content.active');
+            currentStepEl.insertBefore(alertDiv, currentStepEl.firstChild);
+            
+            setTimeout(function() {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function getNozzles(tankDiameter, roofType) {
+            const isEFR = roofType === 'EFR';
+            const nozzles = [];
+
+            const getSizeQty = function(a, b, c, d) {
+                if (tankDiameter <= 14000) return a;
+                else if (tankDiameter <= 24000) return b;
+                else if (tankDiameter <= 34000) return c;
+                else return d;
+            };
+
+            const pushNozzle = function(name, location, range) {
+                const val = getSizeQty(range[0], range[1], range[2], range[3]);
+                if (val !== '-' && (!val.includes('(EFR)') || isEFR)) {
+                    const cleaned = val.replace(' (EFR)', '');
+                    const parts = cleaned.split('-');
+                    if (parts.length === 2) {
+                        const qty = parseInt(parts[0]);
+                        const size = parts[1];
+                        nozzles.push({ name: name, location: location, size: size, qty: qty });
+                    }
+                }
+            };
+
+            // Shell Nozzles
+            pushNozzle('Shell Manhole', 'Shell', ['1-24"', '2-24"', '3-24"', '3-24"']);
+            pushNozzle('Jet Mixer', 'Shell', ['1-6"', '1-8"', '1-8"', '2-10"']);
+            pushNozzle('Product Inlet', 'Shell', ['1-12"', '1-16"', '1-16"', '1-20"']);
+            pushNozzle('Product Outlet', 'Shell', ['1-8"', '1-10"', '1-12"', '1-12"']);
+            pushNozzle('Water Drain Sump', 'Shell', ['2-3"', '2-4"', '3-4"', '3-4"']);
+            pushNozzle('Roof Drain', 'Shell', ['-', '1-4" (EFR)', '2-4" (EFR)', '2-4" (EFR)']);
+            pushNozzle('Product Side Drain', 'Shell', ['1-2"', '1-4"', '1-4"', '1-8"']);
+            pushNozzle('Recirculation', 'Shell', ['1-6"', '1-8"', '1-8"', '1-10"']);
+            pushNozzle('Stripping Nozzle', 'Shell', ['1-2"', '1-2"', '1-4"', '1-4"']);
+            pushNozzle('Sampling Nozzle', 'Shell', ['2-2"', '3-2"', '3-2"', '4-2"']);
+            pushNozzle('TRV Discharge', 'Shell', ['1-1"', '2-1"', '2-1"', '3-1"']);
+            pushNozzle('Level Indicator A', 'Shell', ['1-12"', '1-12"', '1-12"', '1-12"']);
+            pushNozzle('Level Indicator B', 'Shell', ['1-2"', '1-2"', '1-2"', '1-2"']);
+
+            // Roof Nozzles
+            pushNozzle('Roof Manhole A', 'Roof', ['1-24"', '2-24"', '2-30"', '2-30"']);
+            pushNozzle('Manhole Compartment', 'Roof', ['-', '8-20" (EFR)', '16-24" (EFR)', '22-24" (EFR)']);
+            pushNozzle('Level Transmitter - Radar Type', 'Roof', ['1-6"', '1-12"', '1-12"', '1-12"']);
+            pushNozzle('Level Transmitter - IHHLA', 'Roof', ['1-2"', '1-4"', '1-8"', '1-8"']);
+            pushNozzle('Level Transmitter - ATG', 'Roof', ['1-2"', '1-2"', '1-2"', '1-2"']);
+            pushNozzle('Temperature Element', 'Roof', ['1-2"', '1-2"', '2-2"', '3-2"']);
+            pushNozzle('Vent', 'Roof', ['1-4"', '1-6"', '2-6"', '2-6"']);
+            pushNozzle('Hand Dipping', 'Roof', ['1-2"', '1-4"', '1-4"', '1-4"']);
+            pushNozzle('Gauge Hatch', 'Roof', ['1-4"', '1-6"', '1-8"', '1-8"']);
+            pushNozzle('Deck Drain', 'Roof', ['1-4"', '1-4"', '2-4"', '2-4"']);
+            pushNozzle('Automatic Bleeder Vent', 'Roof', ['1-2"', '1-3"', '2-4"', '2-4"']);
+
+            return nozzles;
+        }
+
+        function getNozzleProjection(itemType, sizeInches) {
+            if (itemType === "Shell Manhole" || itemType.includes("Manhole")) return 125;
+            if (itemType === "Roof Manhole") return 250;
+
+            if (itemType === "Roof Nozzle" || itemType === "Roof") {
+                if (sizeInches >= 10 && sizeInches <= 12) return 200;
+                if (sizeInches >= 1.5 && sizeInches <= 8) return 150;
+                return 150; // Default for roof nozzles
+            }
+
+            if (itemType === "Shell Nozzle" || itemType === "Shell") {
+                if (sizeInches >= 46 && sizeInches <= 60) return 400;
+                if (sizeInches >= 42 && sizeInches <= 44) return 375;
+                if (sizeInches >= 38 && sizeInches <= 40) return 375;
+                if (sizeInches >= 34 && sizeInches <= 36) return 350;
+                if (sizeInches >= 30 && sizeInches <= 32) return 325;
+                if (sizeInches >= 24 && sizeInches <= 28) return 300;
+                if (sizeInches >= 20 && sizeInches <= 22) return 275;
+                if (sizeInches >= 14 && sizeInches <= 18) return 250;
+                if (sizeInches >= 10 && sizeInches <= 12) return 225;
+                if (sizeInches >= 6 && sizeInches <= 8) return 200;
+                if (sizeInches >= 3 && sizeInches <= 4) return 175;
+                if (sizeInches >= 0.75 && sizeInches <= 2) return 150;
+                return 150; // Default for shell nozzles
+            }
+
+            return 150; // Default projection
+        }
+
+        function requiresReinforcingPlate(nozzleSizeInches, location) {
+            if (location === "Shell") {
+                return nozzleSizeInches > 2;
+            } else if (location === "Roof") {
+                return nozzleSizeInches > 6;
+            }
+            return false;
+        }
+
+        function getSchedule(sizeInches) {
+            if (isNaN(sizeInches)) return "-";
+            if (sizeInches <= 1) return "Sch 160";
+            if (sizeInches <= 8) return "Sch 80";
+            if (sizeInches <= 24) return "Sch XS";
+            return "Sch XS"; // Default for larger sizes
+        }
+
+        function parseNozzleSize(sizeStr) {
+            const numMatch = sizeStr.match(/(\d+(?:\.\d+)?)/);
+            return numMatch ? parseFloat(numMatch[1]) : 0;
+        }
+
+        function getActualWallThickness(sizeInches, schedule) {
+            const scheduleData = PIPE_WALL_THICKNESS[schedule];
+            if (!scheduleData) return null;
+            
+            // Find closest size
+            let closestSize = null;
+            let minDiff = Infinity;
+            
+            for (let size in scheduleData) {
+                const diff = Math.abs(parseFloat(size) - sizeInches);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSize = parseFloat(size);
+                }
+            }
+            
+            return closestSize ? scheduleData[closestSize] : null;
+        }
+
+        function getPipeOutsideDiameter(sizeInches, schedule) {
+            const scheduleData = PIPE_OUTSIDE_DIAMETER[schedule];
+            if (!scheduleData) return null;
+            
+            // Find closest size
+            let closestSize = null;
+            let minDiff = Infinity;
+            
+            for (let size in scheduleData) {
+                const diff = Math.abs(parseFloat(size) - sizeInches);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSize = parseFloat(size);
+                }
+            }
+            
+            return closestSize ? scheduleData[closestSize] : null;
+        }
+
+        function calculateNozzleWeight(sizeInches, projection, schedule, material = 'CS') {
+            if (projection === "-" || isNaN(sizeInches) || schedule === "-") return 0;
+            
+            const materialDensity = MATERIAL_DENSITIES[material] || 7850; //Default CS
+			const wallThickness = getActualWallThickness(sizeInches, schedule);
+			const outerDiameter = getPipeOutsideDiameter(sizeInches, schedule);
+            
+            if (!wallThickness || !outerDiameter) return 0;
+            
+            // Pipe dimensions
+            const innerDiameter = outerDiameter - (2 * wallThickness * 25.4);
+            const outerRadius = outerDiameter / 2 / 1000; // Convert to meters
+            const innerRadius = innerDiameter / 2 / 1000; // Convert to meters
+            const height = projection / 1000; // Convert to meters
+            
+            const pipeVolume = Math.PI * height * (outerRadius * outerRadius - innerRadius * innerRadius);
+            const pipeWeight = pipeVolume * materialDensity;
+            
+            // Add flange weight
+            const flangeWeight = FLANGE_WEIGHTS[sizeInches] || 0;
+            
+            return pipeWeight + flangeWeight; // kg
+        }
+
+        function calculateNozzleSurfaceArea(sizeInches, projection, schedule) {
+            if (projection === "-" || isNaN(sizeInches) || schedule === "-") return 0;
+            
+            const outerDiameter = getPipeOutsideDiameter(sizeInches, schedule);
+            if (!outerDiameter) return 0;
+            
+            // Pipe surface area
+            const pipeDiameter = outerDiameter / 1000; // Convert to meters
+            const height = projection / 1000; // Convert to meters
+            const pipeArea = Math.PI * pipeDiameter * height;
+            
+            // Flange surface area (both faces)
+            const flangeOD = (FLANGE_OUTER_DIAMETER[sizeInches] || 0) / 1000; // Convert to meters
+            const flangeTO = (FLANGE_TAKE_OFF[sizeInches] || 0) / 1000; // Convert to meters
+            const flangeArea = Math.PI * flangeOD * flangeTO;
+            
+            return pipeArea + flangeArea; // m²
+        }        
+        
+        function calculateNozzles() {
+            showLoading('Step1');
+
+            const diameter = parseFloat(document.getElementById('tankDiameter').value);
+            const roofType = document.getElementById('roofType').value;
+
+            if (isNaN(diameter)) {
+                hideLoading('Step1');
+                showError('Please enter a valid tank diameter.');
+                return;
+            }
+
+            if (diameter <= 0) {
+                hideLoading('Step1');
+                showError('Tank diameter must be greater than zero.');
+                return;
+            }
+
+            if (!roofType) {
+                hideLoading('Step1');
+                showError('Please select a roof type.');
+                return;
+            }
+
+            setTimeout(function() {
+                const nozzles = getNozzles(diameter, roofType);
+
+                const tankInfoHTML = '<div class="tank-info">' +
+                    '<h3>Tank Configuration</h3>' +
+                    '<div class="tank-specs">' +
+                        '<div class="spec-item">' +
+                            '<div class="spec-value">' + diameter + '</div>' +
+                            '<div class="spec-label">Tank Diameter (mm)</div>' +
+                        '</div>' +
+                        '<div class="spec-item">' +
+                            '<div class="spec-value">' + (roofType === 'EFR' ? 'External Floating' : 'Fixed') + '</div>' +
+                            '<div class="spec-label">Roof Type</div>' +
+                        '</div>' +
+                        '<div class="spec-item">' +
+                            '<div class="spec-value">' + nozzles.length + '</div>' +
+                            '<div class="spec-label">Total Nozzles</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+
+                calculationResults = nozzles;
+
+                // Calculate totals
+                totalWeight = 0;
+                totalSurfaceArea = 0;
+                
+                nozzles.forEach(function(nozzle) {
+                    const sizeInches = parseNozzleSize(nozzle.size);
+                    const schedule = getSchedule(sizeInches);
+                    const itemType = nozzle.name.includes('Manhole') ? 
+                        (nozzle.location === 'Shell' ? 'Shell Manhole' : 'Roof Manhole') :
+                        (nozzle.location + ' Nozzle');
+                    const projection = getNozzleProjection(itemType, sizeInches);
+                    
+                    if (projection !== "-" && schedule !== "-") {
+                        const weight = calculateNozzleWeight(sizeInches, projection, schedule);
+                        const surfaceArea = calculateNozzleSurfaceArea(sizeInches, projection, schedule);
+                        
+                        totalWeight += weight * nozzle.qty;
+                        totalSurfaceArea += surfaceArea * nozzle.qty;
+                    }
+                });
+                
+                const totalNozzles = nozzles.length;
+                const totalQuantity = nozzles.reduce(function(sum, nozzle) { return sum + nozzle.qty; }, 0);                
+                
+                displayResults(tankInfoHTML, totalNozzles, totalQuantity);
+                hideLoading('Step1');
+                goToStep(2);
+            }, 1000);
+        }
+
+        function displayResults(tankInfoHTML, totalNozzles, totalQuantity) {
+            document.getElementById('tankInfo').innerHTML = tankInfoHTML;
+
+            const statsHTML = '<div class="stat-card">' +
+                    '<div class="stat-value">' + totalNozzles + '</div>' +
+                    '<div class="stat-label">Nozzle Types</div>' +
+                '</div>' +
+                '<div class="stat-card">' +
+                    '<div class="stat-value">' + totalQuantity + '</div>' +
+                    '<div class="stat-label">Total Quantity</div>' +
+                '</div>' +
+                '<div class="stat-card">' +
+                    '<div class="stat-value">' + totalWeight.toFixed(1) + '</div>' +
+                    '<div class="stat-label">Total Weight (kg)</div>' +
+                '</div>' +
+                '<div class="stat-card">' +
+                    '<div class="stat-value">' + totalSurfaceArea.toFixed(1) + '</div>' +
+                    '<div class="stat-label">Total S. Area (m2)</div>' +
+                '</div>';
+
+            document.getElementById('statsSummary').innerHTML = statsHTML;
+
+            // Generate the results table
+            let tableHTML = '<div class="results-table-container">' +
+                '<table class="results-table">' +
+                '<thead>' +
+                    '<tr>' +
+                        '<th>Item No.</th>' +
+                        '<th>Nozzle Description</th>' +
+                        '<th>Location</th>' +
+                        '<th>Size</th>' +
+                        '<th>Qty</th>' +
+                        '<th>Schedule</th>' +
+                        '<th>Projection (mm)</th>' +
+                        '<th>Reinforcing Plate</th>' +
+                    '</tr>' +
+                '</thead>' +
+                '<tbody>';
+
+            calculationResults.forEach(function(nozzle, index) {
+                const sizeInches = parseNozzleSize(nozzle.size);
+                const schedule = getSchedule(sizeInches);
+                const itemType = nozzle.name.includes('Manhole') ? 
+                    (nozzle.location === 'Shell' ? 'Shell Manhole' : 'Roof Manhole') :
+                    (nozzle.location + ' Nozzle');
+                const projection = getNozzleProjection(itemType, sizeInches);
+                const reinforcing = requiresReinforcingPlate(sizeInches, nozzle.location) ? 'Yes' : 'No';
+
+                let weight = 0;
+                let surfaceArea = 0;
+
+                if (projection !== "-" && schedule !== "-") {
+                    weight = calculateNozzleWeight(sizeInches, projection, schedule) * nozzle.qty;
+                    surfaceArea = calculateNozzleSurfaceArea(sizeInches, projection, schedule) * nozzle.qty;
+                }                
+                
+                tableHTML += '<tr>' +
+                    '<td>' + (index + 1).toString().padStart(3, '0') + '</td>' +
+                    '<td>' + nozzle.name + '</td>' +
+                    '<td>' + nozzle.location + '</td>' +
+                    '<td>' + nozzle.size + '</td>' +
+                    '<td>' + nozzle.qty + '</td>' +
+                    '<td>' + schedule + '</td>' +
+                    '<td>' + projection + '</td>' +
+                    '<td>' + reinforcing + '</td>' +
+                '</tr>';
+            });
+
+            tableHTML += '</tbody></table></div>';
+
+            document.getElementById('results').innerHTML = tableHTML;
+        }
+
+        function exportMTO() {
+            if (calculationResults.length === 0) {
+                showError('No results to export. Please generate nozzle list first.');
+                return;
+            }
+        
+            const diameter = document.getElementById('tankDiameter').value;
+            const roofType = document.getElementById('roofType').value;
+            
+            // Create Excel-compatible CSV content
+            let csvContent = '';
+            
+            // Header section
+            csvContent += 'TANK NOZZLE MTO REPORT\n';
+            csvContent += `Generated,${new Date().toLocaleDateString()}\n`;
+            csvContent += '================================\n';
+            csvContent += '\n';
+            csvContent += 'PROJECT PARAMETERS:\n';
+            csvContent += `Tank Diameter,${diameter} mm\n`;
+            csvContent += `Roof Type,${roofType === 'EFR' ? 'External Floating Roof' : 'Fixed Roof'}\n`;
+            csvContent += '\n';
+            csvContent += 'SUMMARY:\n';
+            csvContent += `Total Nozzle Types,${calculationResults.length}\n`;
+            csvContent += `Total Quantity,${calculationResults.reduce((sum, n) => sum + n.qty, 0)}\n`;
+            csvContent += `Total Weight,${totalWeight.toFixed(2)} kg\n`;
+            csvContent += `Total Surface Area,${totalSurfaceArea.toFixed(2)} m2\n`;
+            csvContent += '\n';
+            csvContent += 'DETAILED NOZZLE LIST:\n';
+            csvContent += '================================\n';
+            csvContent += '\n';
+            
+            // Table headers
+            csvContent += 'Item No.,Nozzle Description,Location,Size,Qty,Schedule,Projection (mm),Weight (kg),Surface Area (m2),Reinforcing Plate\n';
+            
+            // Data rows
+            calculationResults.forEach(function(nozzle, index) {
+                const sizeInches = parseNozzleSize(nozzle.size);
+                const schedule = getSchedule(sizeInches);
+                const itemType = nozzle.name.includes('Manhole') ? 
+                    (nozzle.location === 'Shell' ? 'Shell Manhole' : 'Roof Manhole') :
+                    (nozzle.location + ' Nozzle');
+                const projection = getNozzleProjection(itemType, sizeInches);
+                const reinforcing = requiresReinforcingPlate(sizeInches, nozzle.location) ? 'Yes' : 'No';
+                
+                let weight = 0;
+                let surfaceArea = 0;
+                
+                if (projection !== "-" && schedule !== "-") {
+                    weight = calculateNozzleWeight(sizeInches, projection, schedule) * nozzle.qty;
+                    surfaceArea = calculateNozzleSurfaceArea(sizeInches, projection, schedule) * nozzle.qty;
+                }
+                
+                const escapedDescription = `"${nozzle.name.replace(/"/g, '""')}"`;
+                csvContent += `${(index + 1).toString().padStart(3, '0')},${escapedDescription},${nozzle.location},${nozzle.size},${nozzle.qty},${schedule},${projection},${weight > 0 ? weight.toFixed(3) : '-'},${surfaceArea > 0 ? surfaceArea.toFixed(3) : '-'},${reinforcing}\n`;
+            });
+            
+            // Add totals row
+            const totalQuantity = calculationResults.reduce((sum, n) => sum + n.qty, 0);
+            csvContent += '\n';
+            csvContent += `TOTALS,"All Nozzles",-,-,${totalQuantity},-,-,${totalWeight.toFixed(2)},${totalSurfaceArea.toFixed(2)},-\n`;
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Tank_Nozzle_MTO_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert('Nozzle MTO report exported successfully as Excel file!');
+        }
+
+        // Initialize progress on page load
+        updateProgress();
+
+		// Add input validation feedback on page load
+		document.addEventListener('DOMContentLoaded', function() {
+			const inputs = document.querySelectorAll('input, select');
+			inputs.forEach(input => {
+				input.addEventListener('input', function() {
+					if (this.value && !isNaN(this.value) && parseFloat(this.value) > 0) {
+						this.style.borderColor = '#48bb78';
+					} else if (this.value) {
+						this.style.borderColor = '#f56565';
+					} else {
+						this.style.borderColor = '#e2e8f0';
+					}
+				});
+				
+				input.addEventListener('change', function() {
+					if (this.tagName === 'SELECT') {
+						if (this.value) {
+							this.style.borderColor = '#48bb78';
+						} else {
+							this.style.borderColor = '#ff9a9e';
+						}
+					}
+				});
+			});
+		});
+		
+    </script>
+</body>
+</html>
+		
+    </script>
+</body>
+</html>

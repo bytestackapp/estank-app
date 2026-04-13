@@ -1,0 +1,1004 @@
+	<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script defer src="/_vercel/insights/script.js"></script>
+    <title>Tank Base Plate MTO Estimator</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-solid: #667eea;
+            --primary-hover: #5a6fd8;
+            --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #f7fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Background animation */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; bottom: 20%; left: 20%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+		.header-title {
+			font-size: 2rem;
+			font-weight: 700;
+			background: var(--primary);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 0.5rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.header-icon {
+			width: 2rem;
+			height: 2rem;
+			flex-shrink: 0;
+			fill: currentColor;
+			display: block;
+			margin-top: 0.3rem;
+			margin-right: 0.5rem;
+		}
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .wizard-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 50%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #48bb78;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-solid);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .input-group input:valid {
+            border-color: #48bb78;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 2.2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .course-result {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .course-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .course-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .course-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .course-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .material-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .material-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .material-item::before {
+            content: "📋";
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: var(--primary-solid);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-solid);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-solid);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .base-info {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 1px solid #81e6d9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .base-info h3 {
+            color: #234e52;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .base-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .spec-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #81e6d9;
+        }
+
+        .spec-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38b2ac;
+        }
+
+        .spec-label {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+			<h1 class="header-title">
+				<img src="icon\base-bg.svg" alt="Tool icon" class="header-icon">		
+				Tank Base Plate MTO Estimator
+			</h1>
+            <p class="header-subtitle">Professional tool for calculating tank bottom plate material requirements with precision</p>
+        </div>
+
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" id="step1Indicator">
+                    <span>📝</span>
+                    <span>Base Parameters</span>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <span>📋</span>
+                    <span>Material List</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Parameters -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📜</span>
+                        Tank Base Specifications
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="diameter">Tank Diameter</label>
+                            <input type="number" id="diameter" placeholder="9500" value="9500" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="plateThickness">Base Plate Thickness</label>
+                            <input type="number" id="plateThickness" placeholder="6" value="6" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📐</span>
+                        Raw Plate Dimensions
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="plateWidth">Raw Plate Width</label>
+                            <input type="number" id="plateWidth" placeholder="1829" value="1829" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="plateLength">Raw Plate Length</label>
+                            <input type="number" id="plateLength" placeholder="6096" value="6096" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🧪</span>
+                        Material Specification
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="material">Base Material</label>
+                            <input type="text" id="material" placeholder="CS" value="CS" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="spec">Material Specification</label>
+                            <input type="text" id="spec" placeholder="ASTM A36" value="ASTM A36" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="calculateBase()">
+                        <span>Calculate MTO</span>
+                        <div class="loading-spinner" id="loadingStep1"></div>
+                    </button>
+					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Results -->
+            <div class="step-content" id="step2">
+                <div id="baseInfo"></div>
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="results-section" id="results"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+		// Material density constants (kg/m3)
+		const MATERIAL_DENSITIES = {
+			'CS': 7850, // Carbon Steel
+			'SS': 8000, // Stainless Steel
+			'AL': 2700  // Aluminum
+		};		
+	
+        let currentStep = 1;
+        let calculationResults = [];
+		let totalWeight = 0;
+		let totalSurfaceArea = 0;	
+		
+        function updateProgress() {
+            const progress = (currentStep / 2) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Hide all step indicators
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            // Show target step
+            document.getElementById(`step${step}`).classList.add('active', 'fade-in');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}Indicator`).classList.add('completed');
+            }
+
+            currentStep = step;
+            updateProgress();
+        }
+
+        function showLoading(stepId) {
+            document.getElementById(`loading${stepId}`).style.display = 'inline-block';
+        }
+
+        function hideLoading(stepId) {
+            document.getElementById(`loading${stepId}`).style.display = 'none';
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = message;
+            
+            const currentStepEl = document.querySelector('.step-content.active');
+            currentStepEl.insertBefore(alertDiv, currentStepEl.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function calculateBase() {
+            showLoading('Step1');
+
+            const diameter = parseFloat(document.getElementById('diameter').value);
+            const plateWidth = parseFloat(document.getElementById('plateWidth').value);
+            const plateLength = parseFloat(document.getElementById('plateLength').value);
+            const thickness = parseFloat(document.getElementById('plateThickness').value);
+            const material = document.getElementById('material').value;
+            const spec = document.getElementById('spec').value;
+
+            if (isNaN(diameter) || isNaN(plateWidth) || isNaN(plateLength) || isNaN(thickness)) {
+                hideLoading('Step1');
+                showError('Please fill in all required fields with valid numbers.');
+                return;
+            }
+
+            if (diameter <= 0 || plateWidth <= 0 || plateLength <= 0 || thickness <= 0) {
+                hideLoading('Step1');
+                showError('All values must be greater than zero.');
+                return;
+            }
+
+            // Simulate calculation delay
+            setTimeout(() => {
+                const flatDiameter = diameter;
+                const flatRadius = flatDiameter / 2;
+				const circumference = Math.PI * flatDiameter
+
+                // Determine courses (same logic as original)
+                let courses = [];
+                let remainingRadius = flatRadius;
+                let firstCourseWidth = Math.min(plateWidth, flatDiameter);
+                courses.push(firstCourseWidth);
+                remainingRadius -= firstCourseWidth / 2;
+
+                while (remainingRadius > 0) {
+                    let cw = remainingRadius >= plateWidth ? plateWidth : remainingRadius;
+                    courses.push(cw);
+                    remainingRadius -= cw;
+                }
+
+                // Generate base info
+                const baseArea = Math.PI * (flatRadius / 1000) ** 2; // in m²
+                const baseInfoHTML = `
+                    <div class="base-info">
+                        <h3>Calculated Base Configuration</h3>
+                        <div class="base-specs">
+                            <div class="spec-item">
+                                <div class="spec-value">${diameter}</div>
+                                <div class="spec-label">Tank Diameter (mm)</div>
+                            </div>
+                            <div class="spec-item">
+                                <div class="spec-value">${flatRadius}</div>
+                                <div class="spec-label">Tank Radius (mm)</div>
+                            </div>							
+                            <div class="spec-item">
+                                <div class="spec-value">${circumference.toFixed(0)}</div>
+                                <div class="spec-label">Circumference (mm)</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                calculationResults = [];
+                let totalPlates = 0;
+                let totalItems = 0;
+				totalWeight = 0;
+				totalSurfaceArea = 0;
+
+				const materialDensity = MATERIAL_DENSITIES[material] || 7850;
+				
+                for (let i = 0; i < courses.length; i++) {
+                    let requiredLength;
+                    if (i === 0) {
+                        requiredLength = flatDiameter;
+                    } else {
+                        let horizontal = (firstCourseWidth / 2) + plateWidth * (i - 1);
+                        let verticalLeg = Math.sqrt(flatRadius ** 2 - horizontal ** 2);
+                        requiredLength = verticalLeg * 2;
+                    }
+
+                    const fullPlates = Math.floor(requiredLength / plateLength);
+                    const remainder = requiredLength % plateLength;
+                    const plateCount = (i === 0) ? 1 : 2;
+
+                    const courseResult = {
+                        courseNumber: i + 1,
+                        materials: []
+                    };
+
+                    if (fullPlates > 0) {
+						const plateVolume = plateLength * courses[i] * thickness / 1000000000; // Convert mm� to m�
+						const plateWeight = plateVolume * materialDensity; // kg per plate
+						const plateSurfaceArea = (plateLength * courses[i]) / 1000000;		
+						
+                        courseResult.materials.push({
+                            quantity: plateCount * fullPlates,
+                            description: `${thickness}MM X ${Math.round(courses[i])}MM X ${Math.round(plateLength)}MM, ${material}, ${spec}`,
+                            weight: plateWeight * plateCount * fullPlates,
+							surfaceArea: plateSurfaceArea * 2 * plateCount * fullPlates
+						});
+                        totalPlates += plateCount * fullPlates;
+                        totalItems += plateCount * fullPlates;
+						totalWeight += plateWeight * plateCount * fullPlates;
+						totalSurfaceArea += plateSurfaceArea * 2 * plateCount * fullPlates;						
+                    }
+
+                    if (remainder > 0.1) {
+                        let newWidth;
+                        let remainderHeight;
+						let finalQuantity;
+
+                        if (i === 0) {
+                            if (requiredLength < plateLength) {
+                                newWidth = courses[i];
+                                remainderHeight = remainder;
+								finalQuantity = plateCount;
+                            } else {
+                                newWidth = courses[i];
+                                remainderHeight = remainder / 2;
+								finalQuantity = plateCount * 2;
+                            }
+                        } else if (i === courses.length - 1) {
+                            if (requiredLength <= plateLength) {
+                                newWidth = flatRadius - (firstCourseWidth / 2) - courses.slice(1, i).reduce((sum, w) => sum + w, 0);
+                                newWidth = Math.max(0, Math.min(newWidth, plateWidth));
+                                remainderHeight = remainder;
+								finalQuantity = plateCount;
+                            } else {
+                                let verticalLeg = (fullPlates * plateLength) / 2;
+                                let h = Math.sqrt(flatRadius ** 2 - verticalLeg ** 2);
+                                let usedWidth = (firstCourseWidth / 2) + courses.slice(1, i).reduce((sum, w) => sum + w, 0);
+                                newWidth = h - usedWidth;
+                                newWidth = Math.max(0, Math.min(newWidth, plateWidth));
+                                remainderHeight = remainder / 2;
+								finalQuantity = plateCount * 2;
+                            }
+                        } else {
+                            let verticalLeg = (fullPlates * plateLength) / 2;
+                            let h = Math.sqrt(flatRadius ** 2 - verticalLeg ** 2);
+                            let usedWidth = (firstCourseWidth / 2) + courses.slice(1, i).reduce((sum, w) => sum + w, 0);
+                            newWidth = h - usedWidth;
+                            newWidth = Math.max(0, Math.min(newWidth, plateWidth));
+                            remainderHeight = remainder / 2;
+							finalQuantity = plateCount * 2;
+                        }
+						
+						const remainderVolume = remainderHeight * newWidth * thickness / 1000000000;
+						const remainderWeight = remainderVolume * materialDensity; // kg
+						const remainderSurfaceArea = (remainderHeight * newWidth) / 1000000;
+						
+						courseResult.materials.push({
+							quantity: finalQuantity,
+							description: `${thickness}MM X ${Math.round(newWidth)}MM X ${Math.round(remainderHeight)}MM, ${material}, ${spec}`,
+							weight: remainderWeight * plateCount,
+							surfaceArea: remainderSurfaceArea * 2 * plateCount
+						});
+						totalPlates += plateCount;
+						totalItems += plateCount;
+						totalWeight += remainderWeight * plateCount;
+						totalSurfaceArea += remainderSurfaceArea * 2 * plateCount;
+                    }
+
+                    calculationResults.push(courseResult);
+                }
+
+                displayResults(baseInfoHTML, totalItems, courses.length);
+                hideLoading('Step1');
+                goToStep(2);
+            }, 1000);
+        }
+
+        function displayResults(baseInfoHTML, totalItems, totalCourses) {
+            // Base info
+            document.getElementById('baseInfo').innerHTML = baseInfoHTML;
+
+            // Stats summary
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalCourses}</div>
+                    <div class="stat-label">Total Courses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalItems}</div>
+                    <div class="stat-label">Total Items</div>
+				</div>	
+				<div class="stat-card">
+					<div class="stat-value">${totalWeight.toFixed(1)}</div>
+					<div class="stat-label">Total Weight (kg)</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalSurfaceArea.toFixed(1)}</div>
+					<div class="stat-label">Total S. Area (m2)</div>
+				</div>
+            `;
+
+            // Results grid
+            let resultsHTML = '<div class="results-grid">';
+            calculationResults.forEach(course => {
+                if (course.materials.length > 0) {
+                    resultsHTML += `
+                        <div class="course-result">
+                            <div class="course-header">
+                                <div class="course-title">Course ${course.courseNumber}</div>
+                                <div class="course-badge">Base Plates</div>
+                            </div>
+                            <ul class="material-list">
+                    `;
+                    
+                    course.materials.forEach(material => {
+                        resultsHTML += `
+                            <li class="material-item">
+                                <strong>${material.quantity} PCS</strong> - ${material.description}
+                            </li>
+                        `;
+                    });
+                    
+                    resultsHTML += `
+                            </ul>
+                        </div>
+                    `;
+                }
+            });
+            resultsHTML += '</div>';
+
+            document.getElementById('statsSummary').innerHTML = statsHTML;
+            document.getElementById('results').innerHTML = resultsHTML;
+        }
+
+		function exportMTO() {
+			// Prepare data for export
+			const diameter = document.getElementById('diameter').value;
+			const thickness = document.getElementById('plateThickness').value;
+			const material = document.getElementById('material').value;
+			const spec = document.getElementById('spec').value;
+			
+			// Create Excel-compatible CSV content
+			let csvContent = '';
+			
+			// Header section
+			csvContent += 'TANK BASE PLATE MTO REPORT\n';
+			csvContent += `Generated,${new Date().toLocaleDateString()}\n`;
+			csvContent += '================================\n';
+			csvContent += '\n';
+			csvContent += 'PROJECT PARAMETERS:\n';
+			csvContent += `Tank Diameter,${diameter} mm\n`;
+			csvContent += `Base Thickness,${thickness} mm\n`;
+			csvContent += `Base Material,${material}\n`;
+			csvContent += `Material Spec,${spec}\n`;
+			csvContent += '\n';
+			csvContent += 'SUMMARY:\n';
+			csvContent += `Total Items,${calculationResults.reduce((sum, course) => sum + course.materials.reduce((s, m) => s + m.quantity, 0), 0)}\n`;
+			csvContent += `Total Weight,${totalWeight.toFixed(2)} kg\n`;
+			csvContent += `Total Surface Area,${totalSurfaceArea.toFixed(2)} m2\n`;
+			csvContent += '\n';
+			csvContent += 'DETAILED MTO:\n';
+			csvContent += '================================\n';
+			csvContent += '\n';
+			
+			// Table headers for Excel
+			csvContent += 'Course,Quantity,Description,Weight (kg),Surface Area (m2)\n';
+			
+			// Data rows
+			calculationResults.forEach(course => {
+				course.materials.forEach(material => {
+					// Escape commas and quotes in description for CSV format
+					const escapedDescription = `"${material.description.replace(/"/g, '""')}"`;
+					csvContent += `Course ${course.courseNumber},${material.quantity},${escapedDescription},${material.weight.toFixed(3)},${material.surfaceArea.toFixed(3)}\n`;
+				});
+			});
+			
+			// Add totals row
+			const totalItems = calculationResults.reduce((sum, course) => sum + course.materials.reduce((s, m) => s + m.quantity, 0), 0);
+			csvContent += '\n';
+			csvContent += `TOTALS,${totalItems},"All Courses",${totalWeight.toFixed(2)},${totalSurfaceArea.toFixed(2)}\n`;
+			
+			// Create and download Excel file
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `Tank_Base_Plate_MTO_${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+			
+			alert('MTO report exported successfully as Excel file!');
+		}
+
+        // Initialize progress bar
+        updateProgress();
+
+        // Add smooth transitions
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-1px)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+
+                // Add input validation feedback
+                input.addEventListener('input', function() {
+                    if (this.value && !isNaN(this.value) && parseFloat(this.value) > 0) {
+                        this.style.borderColor = '#48bb78';
+                    } else if (this.value) {
+                        this.style.borderColor = '#f56565';
+                    } else {
+                        this.style.borderColor = '#e2e8f0';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

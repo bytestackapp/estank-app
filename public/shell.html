@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script defer src="/_vercel/insights/script.js"></script>
+    <title>Tank Shell Plate MTO Estimator</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-solid: #667eea;
+            --primary-hover: #5a6fd8;
+            --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #f7fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Background animation */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; bottom: 20%; left: 20%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+		.header {
+			background: var(--bg-card);
+			backdrop-filter: blur(20px);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: var(--border-radius);
+			padding: 2rem;
+			text-align: center;
+			box-shadow: var(--shadow);
+			margin-bottom: 2rem;
+		}
+		.header-title {
+			font-size: 2rem;
+			font-weight: 700;
+			background: var(--primary);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 0.5rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.header-icon {
+			width: 1.8rem;
+			height: 1.8rem;
+			flex-shrink: 0;
+			fill: currentColor;
+			display: block;
+			margin-top: 0.3rem;
+			margin-right: 0.5rem;
+		}
+		.header-subtitle {
+			color: var(--text-secondary);
+			font-size: 1rem;
+		}
+
+        .wizard-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 50%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #48bb78;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-solid);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .input-group input:valid {
+            border-color: #48bb78;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 2.2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .thickness-inputs {
+            margin-top: 2rem;
+        }
+
+        .course-info {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 1px solid #81e6d9;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .course-info h3 {
+            color: #234e52;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #38b2ac;
+        }
+
+        .thickness-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .thickness-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .thickness-item:hover {
+            border-color: var(--primary-solid);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .course-result {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .course-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .course-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .course-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .course-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .material-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .material-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .material-item::before {
+            content: "📋";
+            font-size: 0.9rem;
+        }
+
+		.saddle-specs {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 1rem;
+			margin-top: 1rem;
+		}
+		
+		.spec-item {
+			text-align: center;
+			padding: 1rem;
+			background: white;
+			border-radius: 8px;
+			border: 1px solid #81e6d9;
+		}
+		
+		.spec-value {
+			font-size: 1.2rem;
+			font-weight: 700;
+			color: #38b2ac;
+		}
+		
+		.spec-label {
+			font-size: 0.85rem;
+			color: #4a5568;
+			margin-top: 0.25rem;
+		}		
+		
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: var(--primary-solid);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-solid);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-solid);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+		<div class="header">
+			<h1 class="header-title">
+				<img src="icon\shell-bg.svg" alt="Tool icon" class="header-icon">
+				Tank Shell Plate MTO Estimator
+			</h1>
+			<p class="header-subtitle">Professional tool for calculating shell plate material requirements with precision</p>
+		</div>
+
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" id="step1Indicator">
+                    <span>📝</span>
+                    <span>Tank Parameters</span>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <span>📏</span>
+                    <span>Course Thickness</span>
+                </div>
+                <div class="step" id="step3Indicator">
+                    <span>📋</span>
+                    <span>Material List</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Parameters -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📜</span>
+                        Tank Specifications
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="diameter">Tank Diameter</label>
+                            <input type="number" id="diameter" placeholder="5000" value="5000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="height">Shell Height</label>
+                            <input type="number" id="height" placeholder="12000" value="12000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📐</span>
+                        Plate Dimensions
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="plateWidth">Plate Width</label>
+                            <input type="number" id="plateWidth" placeholder="1829" value="1829" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="plateLength">Plate Length</label>
+                            <input type="number" id="plateLength" placeholder="6096" value="6096" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🧪</span>
+                        Material Specification
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="material">Base Material</label>
+                            <input type="text" id="material" placeholder="CS" value="CS" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="spec">Material Specification</label>
+                            <input type="text" id="spec" placeholder="ASTM A36" value="ASTM A36" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="calculateCourses()">
+                        <span>Calculate Courses</span>
+                        <div class="loading-spinner" id="loadingStep1"></div>
+                    </button>
+					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Course Thickness -->
+            <div class="step-content" id="step2">
+                <div id="courseInfo"></div>
+                <div class="thickness-inputs" id="thicknessInputs"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="generateMTO()">
+                        <span>Generate MTO</span>
+                        <div class="loading-spinner" id="loadingStep2"></div>
+                    </button>
+					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 3: Results -->
+            <div class="step-content" id="step3">
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="results-section" id="results"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+		// Material density constants (kg/m3)
+		const MATERIAL_DENSITIES = {
+			'CS': 7850, // Carbon Steel
+			'SS': 8000, // Stainless Steel
+			'AL': 2700  // Aluminum
+		};
+	
+        let currentStep = 1;
+        let numCourses = 0;
+        let calculationResults = [];
+
+        function updateProgress() {
+            const progress = (currentStep / 3) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Hide all step indicators
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            // Show target step
+            document.getElementById(`step${step}`).classList.add('active', 'fade-in');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}Indicator`).classList.add('completed');
+            }
+
+            currentStep = step;
+            updateProgress();
+        }
+
+        function showLoading(stepId) {
+            document.getElementById(`loading${stepId}`).style.display = 'inline-block';
+        }
+
+        function hideLoading(stepId) {
+            document.getElementById(`loading${stepId}`).style.display = 'none';
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = message;
+            
+            const currentStepEl = document.querySelector('.step-content.active');
+            currentStepEl.insertBefore(alertDiv, currentStepEl.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function calculateCourses() {
+            showLoading('Step1');
+
+            const diameter = parseFloat(document.getElementById('diameter').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const plateWidth = parseFloat(document.getElementById('plateWidth').value);
+
+            if (isNaN(diameter) || isNaN(height) || isNaN(plateWidth)) {
+                hideLoading('Step1');
+                showError('Please fill in all required fields with valid numbers.');
+                return;
+            }
+
+            if (diameter <= 0 || height <= 0 || plateWidth <= 0) {
+                hideLoading('Step1');
+                showError('All values must be greater than zero.');
+                return;
+            }
+
+            // Simulate calculation delay for better UX
+            setTimeout(() => {
+                numCourses = Math.ceil(height / plateWidth);
+                
+                const courseInfoHTML = `
+                    <div class="course-info">
+                        <h3>Calculated Required Courses</h3>
+                        <div class="course-number">${numCourses}</div>
+                        <p>Courses</p>
+
+                    </div>
+                `;
+
+                let thicknessHTML = '<div class="thickness-grid">';
+                for (let i = 0; i < numCourses; i++) {
+                    thicknessHTML += `
+                        <div class="thickness-item">
+                            <div class="input-group">
+                                <label for="thickness${i}">Course ${i + 1}</label>
+                                <input type="number" id="thickness${i}" value="6" required>
+                                <span class="unit-label">mm</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #718096; margin-top: 0.5rem;">
+                                ${i === 0 ? 'Bottom course' : i === numCourses - 1 ? 'Top course' : `Intermediate course`}
+                            </div>
+                        </div>
+                    `;
+                }
+                thicknessHTML += '</div>';
+
+                document.getElementById('courseInfo').innerHTML = courseInfoHTML;
+                document.getElementById('thicknessInputs').innerHTML = thicknessHTML;
+
+                hideLoading('Step1');
+                goToStep(2);
+            }, 800);
+        }
+
+        function generateMTO() {
+            showLoading('Step2');
+
+            // Validate all thickness inputs
+            let allValid = true;
+            for (let i = 0; i < numCourses; i++) {
+                const thickness = parseFloat(document.getElementById(`thickness${i}`).value);
+                if (isNaN(thickness) || thickness <= 0) {
+                    allValid = false;
+                    break;
+                }
+            }
+
+            if (!allValid) {
+                hideLoading('Step2');
+                showError('Please enter valid thickness values for all courses.');
+                return;
+            }
+
+            // Simulate calculation delay
+            setTimeout(() => {
+                const diameter = parseFloat(document.getElementById('diameter').value);
+                const height = parseFloat(document.getElementById('height').value);
+                const plateWidth = parseFloat(document.getElementById('plateWidth').value);
+                const plateLength = parseFloat(document.getElementById('plateLength').value);
+                const material = document.getElementById('material').value;
+                const spec = document.getElementById('spec').value;
+                const circumference = Math.PI * diameter;
+				
+				const materialDensity = MATERIAL_DENSITIES[material] || 7850; // Default to CS if unknown
+
+                calculationResults = [];
+                let totalPlates = 0;
+				let totalWeight = 0; // kg
+				let totalSurfaceArea = 0; // m2
+
+                for (let i = 0; i < numCourses; i++) {
+                    const thickness = parseFloat(document.getElementById(`thickness${i}`).value);
+                    
+                    let courseHeight = plateWidth;
+                    if (i === numCourses - 1) {
+                        courseHeight = height - (plateWidth * (numCourses - 1));
+                    }
+
+                    const fullPlates = Math.floor(circumference / plateLength);
+                    const remainder = circumference % plateLength;
+
+                    const courseResult = {
+                        courseNumber: i + 1,
+                        thickness: thickness,
+                        height: courseHeight,
+                        materials: []
+                    };
+
+                    if (fullPlates > 0) {
+						const plateVolume = plateLength * courseHeight * thickness / 1000000000; // Convert mm³ to m³
+						const plateWeight = plateVolume * materialDensity; // kg per plate
+						const plateSurfaceArea = (plateLength * courseHeight) / 1000000;
+						
+                        courseResult.materials.push({
+                            quantity: fullPlates,
+                            description: `${thickness}MM X ${courseHeight}MM X ${plateLength}MM, PLATE, ${material}, ${spec}`,
+							weight: plateWeight * fullPlates,
+							surfaceArea: plateSurfaceArea * 2 * fullPlates
+                        });
+                        totalPlates += fullPlates;
+						totalWeight += plateWeight * fullPlates;
+						totalSurfaceArea += plateSurfaceArea * 2 * fullPlates;
+                    }
+
+                    if (remainder > 0.1) {
+						const remainderVolume = remainder * courseHeight * thickness / 1000000000; // Convert mm³ to m³
+						const remainderWeight = remainderVolume * materialDensity; // kg
+						const remainderSurfaceArea = (remainder * courseHeight) / 1000000;
+						
+						
+                        courseResult.materials.push({
+                            quantity: 1,
+                            description: `${thickness}MM X ${courseHeight}MM X ${remainder.toFixed(0)}MM, PLATE, ${material}, ${spec}`,
+							weight: remainderWeight,
+							surfaceArea: remainderSurfaceArea * 2
+                        });
+                        totalPlates += 1;
+						totalWeight += remainderWeight;
+						totalSurfaceArea += remainderSurfaceArea * 2;
+                    }
+
+                    calculationResults.push(courseResult);
+                }
+
+                displayResults(totalPlates, totalWeight, totalSurfaceArea);
+                hideLoading('Step2');
+                goToStep(3);
+            }, 1000);
+        }
+
+		function displayResults(totalPlates, totalWeight, totalSurfaceArea) {
+			// Shell configuration info
+			const diameter = parseFloat(document.getElementById('diameter').value);
+			const height = parseFloat(document.getElementById('height').value);
+			const plateWidth = parseFloat(document.getElementById('plateWidth').value);
+			const plateLength = parseFloat(document.getElementById('plateLength').value);
+			const circumference = Math.PI * diameter;
+			
+			const shellInfoHTML = `
+				<div class="course-info">
+					<h3>Calculated Shell Configuration</h3>
+					<div class="saddle-specs">
+						<div class="spec-item">
+							<div class="spec-value">${diameter}</div>
+							<div class="spec-label">Tank Diameter (mm)</div>
+						</div>
+						<div class="spec-item">
+							<div class="spec-value">${height}</div>
+							<div class="spec-label">Shell Height (mm)</div>
+						</div>
+						<div class="spec-item">
+							<div class="spec-value">${Math.round(circumference)}</div>
+							<div class="spec-label">Circumference (mm)</div>
+						</div>
+					</div>
+				</div>
+			`;
+		
+			// Stats summary
+			const totalItems = calculationResults.reduce((sum, course) => sum + course.materials.reduce((s, m) => s + m.quantity, 0), 0);
+			
+			const statsHTML = `
+				<div class="stat-card">
+					<div class="stat-value">${numCourses}</div>
+					<div class="stat-label">Total Courses</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalItems}</div>
+					<div class="stat-label">Total Items</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalWeight.toFixed(1)}</div>
+					<div class="stat-label">Total Weight (kg)</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${totalSurfaceArea.toFixed(1)}</div>
+					<div class="stat-label">Total S. Area (m2)</div>
+				</div>
+			`;
+		
+			// Results grid - keep original display format (no weight/area shown in list)
+			let resultsHTML = '<div class="results-grid">';
+			calculationResults.forEach(course => {
+				resultsHTML += `
+					<div class="course-result">
+						<div class="course-header">
+							<div class="course-title">Course ${course.courseNumber}</div>
+							<div class="course-badge">Shell Plates</div>
+						</div>
+						<ul class="material-list">
+				`;
+				
+				course.materials.forEach(material => {
+					resultsHTML += `
+						<li class="material-item">
+							<strong>${material.quantity} PCS</strong> - ${material.description}
+						</li>
+					`;
+				});
+				
+				resultsHTML += `
+						</ul>
+					</div>
+				`;
+			});
+			resultsHTML += '</div>';
+		
+			// Insert shell info at the very top of step 3
+			const step3Element = document.getElementById('step3');
+			const existingShellInfo = step3Element.querySelector('.course-info');
+			if (existingShellInfo) {
+				existingShellInfo.remove();
+			}
+			step3Element.insertAdjacentHTML('afterbegin', shellInfoHTML);
+		
+			document.getElementById('statsSummary').innerHTML = statsHTML;
+			document.getElementById('results').innerHTML = resultsHTML;
+		}
+
+		function exportMTO() {
+			// Prepare data for export
+			const diameter = document.getElementById('diameter').value;
+			const height = document.getElementById('height').value;
+			const material = document.getElementById('material').value;
+			const spec = document.getElementById('spec').value;
+			
+			// Calculate totals
+			let totalWeight = 0;
+			let totalSurfaceArea = 0;
+			let totalItems = 0;
+			
+			calculationResults.forEach(course => {
+				course.materials.forEach(material => {
+					totalWeight += material.weight;
+					totalSurfaceArea += material.surfaceArea;
+					totalItems += material.quantity;
+				});
+			});
+			
+			// Create Excel-compatible CSV content
+			let csvContent = '';
+			
+			// Header section
+			csvContent += 'TANK SHELL PLATE MTO REPORT\n';
+			csvContent += `Generated,${new Date().toLocaleDateString()}\n`;
+			csvContent += '================================\n';
+			csvContent += '\n';
+			csvContent += 'PROJECT PARAMETERS:\n';
+			csvContent += `Tank Diameter,${diameter} mm\n`;
+			csvContent += `Shell Height,${height} mm\n`;
+			csvContent += `Base Material,${material}\n`;
+			csvContent += `Material Spec,${spec}\n`;
+			csvContent += `Number of Courses,${numCourses}\n`;
+			csvContent += '\n';
+			csvContent += 'SUMMARY:\n';
+			csvContent += `Total Items,${totalItems}\n`;
+			csvContent += `Total Weight,${totalWeight.toFixed(2)} kg\n`;
+			csvContent += `Total Surface Area,${totalSurfaceArea.toFixed(2)} m2\n`;
+			csvContent += '\n';
+			csvContent += 'DETAILED MTO:\n';
+			csvContent += '================================\n';
+			csvContent += '\n';
+			
+			// Table headers for Excel
+			csvContent += 'Course,Quantity,Description,Weight (kg),Surface Area (m2)\n';
+			
+			// Data rows
+			calculationResults.forEach(course => {
+				course.materials.forEach(material => {
+					// Escape commas and quotes in description for CSV format
+					const escapedDescription = `"${material.description.replace(/"/g, '""')}"`;
+					csvContent += `Course ${course.courseNumber},${material.quantity},${escapedDescription},${material.weight.toFixed(3)},${material.surfaceArea.toFixed(3)}\n`;
+				});
+			});
+			
+			// Add totals row
+			csvContent += '\n';
+			csvContent += `TOTALS,${totalItems},"All Courses",${totalWeight.toFixed(2)},${totalSurfaceArea.toFixed(2)}\n`;
+			
+			// Create and download Excel file
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `Tank_Shell_Plate_MTO_${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+			
+			alert('MTO report exported successfully as Excel file!');
+		}
+
+        // Initialize progress bar
+        updateProgress();
+
+        // Add smooth transitions
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'translateY(-1px)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

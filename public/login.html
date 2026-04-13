@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <title>Login - Tank MTO Estimator Suite</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --primary-hover: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      --secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      --error: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      --text-primary: #2d3748;
+      --text-secondary: #4a5568;
+      --text-light: #718096;
+      --bg-primary: #f7fafc;
+      --bg-card: rgba(255, 255, 255, 0.95);
+      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      --border-radius: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem 0;
+    }
+
+    /* Animated background elements */
+    .bg-shapes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+      width: 120px;
+      height: 120px;
+      top: 15%;
+      left: 15%;
+      animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+      width: 80px;
+      height: 80px;
+      top: 60%;
+      right: 20%;
+      animation-delay: 2s;
+    }
+
+    .shape:nth-child(3) {
+      width: 100px;
+      height: 100px;
+      top: 75%;
+      left: 10%;
+      animation-delay: 4s;
+    }
+
+    .shape:nth-child(4) {
+      width: 60px;
+      height: 60px;
+      top: 20%;
+      right: 15%;
+      animation-delay: 6s;
+    }
+
+    @keyframes float {
+      0%, 100% { 
+        transform: translateY(0px) rotate(0deg) scale(1); 
+        opacity: 0.7;
+      }
+      33% { 
+        transform: translateY(-30px) rotate(120deg) scale(1.1); 
+        opacity: 0.9;
+      }
+      66% { 
+        transform: translateY(20px) rotate(240deg) scale(0.9); 
+        opacity: 0.8;
+      }
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 1rem;
+      animation: slideInUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      margin: auto;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(60px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .login-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--border-radius);
+      padding: 2.5rem 2.5rem;
+      box-shadow: var(--shadow-hover);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .login-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: var(--primary);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      color: white;
+      box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+      animation: iconPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes iconPulse {
+      0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+      }
+      50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 16px 40px rgba(102, 126, 234, 0.6);
+      }
+    }
+
+    .login-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: var(--primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid rgba(102, 126, 234, 0.1);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: rgba(102, 126, 234, 0.5);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-light);
+    }
+
+	.password-toggle {
+		position: absolute;
+		right: 1rem;
+		top: 50%;
+		transform: translateY(-50%);
+		border: none;
+		background: none;
+		cursor: pointer;
+		font-size: 1.2rem;
+		color: #555;
+	}
+	
+	.password-toggle:hover {
+		color: #000;
+	}
+
+
+    .login-btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+      background: var(--primary-hover);
+    }
+
+    .login-btn:hover::before {
+      left: 100%;
+    }
+
+    .login-btn:active {
+      transform: translateY(-1px) scale(0.98);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-box {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(238, 90, 36, 0.1) 100%);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #e53e3e;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: none;
+      animation: errorShake 0.5s ease;
+    }
+
+    .error-box.show {
+      display: block;
+    }
+
+    @keyframes errorShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .forgot-password {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+	
+	.forgot-password a.signup-link {
+		margin-left: 20px; /* adjust the spacing */
+	}
+	
+    .forgot-password a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .forgot-password a:hover {
+      color: #667eea;
+      text-decoration: underline;
+    }
+
+    .demo-credentials {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+      border: 1px solid rgba(79, 172, 254, 0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .demo-credentials h4 {
+      color: #4facfe;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .demo-credentials p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin: 0.25rem 0;
+    }
+
+    .quick-login-btns {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .quick-login-btn {
+      flex: 1;
+      background: rgba(79, 172, 254, 0.1);
+      border: 1px solid rgba(79, 172, 254, 0.3);
+      color: #4facfe;
+      border-radius: 8px;
+      padding: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .quick-login-btn:hover {
+      background: rgba(79, 172, 254, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .footer-links {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .footer-links a {
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.8rem;
+      margin: 0 1rem;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: white;
+    }
+
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      margin: 5% auto;
+      padding: 1rem 2rem;
+      border-radius: var(--border-radius);
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--shadow-hover);
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      background: var(--primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .modal-content p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content strong {
+      color: var(--text-primary);
+    }
+
+    .close {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .close:hover {
+      color: #e53e3e;
+      background: rgba(229, 62, 62, 0.1);
+      transform: scale(1.1);
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalSlideIn {
+      from { transform: translateY(-50px) scale(0.95); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 1rem;
+      }
+
+      .login-card {
+        padding: 2rem 1.5rem;
+      }
+
+      .login-title {
+        font-size: 1.5rem;
+      }
+
+      .quick-login-btns {
+        flex-direction: column;
+      }
+    }
+	
+	/* Hide Edge/IE built-in password reveal button */
+		input[type="password"]::-ms-reveal,
+		input[type="password"]::-ms-clear {
+		display: none;
+	}
+	
+	/* Hide Chrome/Safari built-in clear button on password fields */
+		input[type="password"]::-webkit-credentials-auto-fill-button,
+		input[type="password"]::-webkit-clear-button {
+		display: none !important;
+	}	
+	
+	
+  </style>
+</head>
+<body>
+  <div class="bg-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-icon">🔐</div>
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-subtitle">Sign in to Tank MTO Estimator Suite</p>
+      </div>
+
+
+
+      <div id="errorBox" class="error-box">
+        <strong>⚠️ Authentication Failed</strong><br>
+        Please check your username and password and try again.
+      </div>
+
+      <form method="POST" action="/login" id="loginForm">
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <input 
+            id="username"
+            name="username" 
+            class="form-input"
+            placeholder="Enter your username" 
+            required 
+            autocomplete="username"
+          />
+        </div>
+
+		<div class="form-group">
+		<label class="form-label" for="password">Password</label>
+		<div style="position: relative;">
+			<input 
+			id="password"
+			type="password" 
+			name="password" 
+			class="form-input"
+			placeholder="Enter your password" 
+			required 
+			autocomplete="current-password"
+			/>
+			<button type="button" class="password-toggle" onclick="togglePassword()">
+			<i id="toggleIcon" class="fa-solid fa-eye"></i>
+			</button>
+		</div>
+		</div>
+
+
+
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          <span class="loading-spinner" id="loadingSpinner"></span>
+          <span id="btnText">Sign In</span>
+        </button>
+      </form>
+
+      <div class="forgot-password">
+        <a href="#" onclick="openModal('forgotPasswordModal')">Forgot your password?</a>
+		<a href="#" onclick="openModal('signUpModal')" class="signup-link">Sign Up</a>
+      </div>
+
+		<div class="footer-links">
+		<a href="#" onclick="openModal('aboutModal')">About</a>
+		<a href="#" onclick="openModal('supportModal')">Support</a>
+		<a href="#" onclick="openModal('privacyModal')">Privacy</a>
+		</div>
+
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="aboutModal" class="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal('aboutModal')">&times;</button>
+      <h2>🛢️ About Tank MTO Estimator Suite</h2>
+      <p><strong>Version:</strong> 2.0</p>
+      <p><strong>Release:</strong> August 2025</p>
+      <p><strong>Developer:</strong> M.O. Gonda</p>
+      <p>Professional engineering tools for accurate material take-offs in storage tank design. Featuring modern UI/UX with enhanced calculation algorithms for precise engineering estimates.</p>
+    </div>
+  </div>
+
+  <div id="supportModal" class="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal('supportModal')">&times;</button>
+      <h2>💬 Technical Support</h2>
+      <p><strong>For technical assistance or feature requests:</strong></p>
+      <p>📧 <strong>Email:</strong> support@tankmto.com</p>
+      <p>📞 <strong>Phone:</strong> +1-XXX-XXX-XXXX</p>
+      <p>🕒 <strong>Business Hours:</strong> Mon-Fri 9AM-5PM EST</p>
+      <p>We're here to help you get the most out of your Tank MTO Estimator Suite experience.</p>
+    </div>
+  </div>
+
+  <div id="privacyModal" class="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal('privacyModal')">&times;</button>
+      <h2>🔒 Privacy Policy</h2>
+      <p><strong>Your data security is our priority:</strong></p>
+      <p>• All calculations performed locally in your browser</p>
+      <p>• No personal data stored on external servers</p>
+      <p>• Session-based authentication only</p>
+      <p>• GDPR compliant data handling procedures</p>
+      <p>• No tracking or analytics without consent</p>
+    </div>
+  </div>
+
+	<div id="forgotPasswordModal" class="modal">
+	<div class="modal-content">
+		<button class="close" onclick="closeModal('forgotPasswordModal')">&times;</button>
+		<h2>🔑 Forgot Password</h2>
+		<p>Please contact the administrator to reset your password.</p>
+	</div>
+	</div>
+
+	<div id="signUpModal" class="modal">
+	<div class="modal-content">
+		<button class="close" onclick="closeModal('signUpModal')">&times;</button>
+		<h2>✍️ Sign Up</h2>
+		<form id="signUpForm" onsubmit="submitSignUp(event)">
+		<div class="form-group">
+			<label class="form-label" for="firstName">First Name</label>
+			<input type="text" id="firstName" name="firstName" class="form-input" required>
+		</div>
+		<div class="form-group">
+			<label class="form-label" for="lastName">Last Name</label>
+			<input type="text" id="lastName" name="lastName" class="form-input" required>
+		</div>
+		<div class="form-group">
+			<label class="form-label" for="email">Email Address</label>
+			<input type="email" id="email" name="email" class="form-input" required>
+		</div>
+		<div class="form-group">
+			<label class="form-label" for="usernameSignUp">Desired Username</label>
+			<input type="text" id="usernameSignUp" name="usernameSignUp" class="form-input" required>
+		</div>
+		<div class="form-group">
+			<label class="form-label" for="passwordSignUp">Password</label>
+			<input type="password" id="passwordSignUp" name="passwordSignUp" class="form-input" required>
+		</div>		
+		<button type="submit" class="login-btn">Submit</button>
+		<p style="font-size:0.8rem; margin-top:1rem; color:var(--text-secondary);">
+			Your account will be reviewed by the administrator. You will receive an email once approved.
+		</p>
+		</form>
+	</div>
+	</div>
+
+	<div id="signUpSuccessModal" class="modal">
+	<div class="modal-content">
+		<button class="close" onclick="closeModal('signUpSuccessModal')">&times;</button>
+		<h2>✍️ Application Submitted</h2>
+		<p>Your application request has been submitted. Please wait for admin approval.</p>
+	</div>
+	</div>
+
+	<div id="signUpErrorModal" class="modal">
+	<div class="modal-content">
+		<button class="close" onclick="closeModal('signUpErrorModal')">&times;</button>
+		<h2>❌ Sign Up Error</h2>
+		<p id="signUpErrorMessage">Error: Your application for this account is already being processed.</p>
+	</div>
+	</div>
+
+	<div id="loginErrorModal" class="modal">
+  <div class="modal-content">
+    <button class="close" onclick="closeModal('loginErrorModal')">&times;</button>
+    <h2>❌ Login Error</h2>
+    <p id="loginErrorMessage">Invalid username or password. Please try again.</p>
+  </div>
+</div>
+	
+  <div id="comingSoonModal" class="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal('comingSoonModal')">&times;</button>
+      <h2>🚀 Coming Soon</h2>
+      <p id="comingSoonText">This feature is currently under development.</p>
+      <p><strong>Expected Release:</strong> Next update</p>
+      <p>Stay tuned for more exciting features and improvements!</p>
+    </div>
+  </div>
+
+  <script>
+
+    // Password visibility toggle
+	function togglePassword() {
+	const passwordInput = document.getElementById('password');
+	const toggleIcon = document.getElementById('toggleIcon');
+	
+	if (passwordInput.type === 'password') {
+		passwordInput.type = 'text';
+		toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+		toggleIcon.style.color = "green"; // visible
+	} else {
+		passwordInput.type = 'password';
+		toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+		toggleIcon.style.color = "#555"; // hidden
+	}
+	}
+
+	function submitSignUp(e) {
+	e.preventDefault();
+	
+	const data = {
+		firstName: document.getElementById('firstName').value,
+		lastName: document.getElementById('lastName').value,
+		email: document.getElementById('email').value,
+		username: document.getElementById('usernameSignUp').value,
+		password: document.getElementById('passwordSignUp').value
+	};
+	
+	// Show a simple loading indicator (optional)
+	const btn = e.target.querySelector('button[type="submit"]');
+	btn.disabled = true;
+	btn.textContent = 'Submitting...';
+	
+	// Send data to server (replace /signup with your endpoint)
+	fetch('/api/signup', {
+		method: 'POST',
+		headers: {'Content-Type': 'application/json'},
+		body: JSON.stringify(data)
+	})
+	.then(res => res.json())
+	.then(response => {
+		btn.disabled = false;
+		btn.textContent = 'Submit';
+	if(response.success) {
+		closeModal('signUpModal');                 // Close the sign-up form
+		openModal('signUpSuccessModal');           // Open the success modal
+		e.target.reset();                          // Reset the form
+	} else {
+		// Update the error modal text
+		document.getElementById('signUpErrorMessage').textContent = 
+			response.message || 'Please try again.';
+	
+		// Show the error modal
+		openModal('signUpErrorModal');
+	}
+
+	})
+	.catch(err => {
+		console.error(err);
+		btn.disabled = false;
+		btn.textContent = 'Submit';
+		alert('Network error. Please try again later.');
+	});
+	}
+
+    // Quick login functionality
+    function quickLogin(username, password) {
+      document.getElementById('username').value = username;
+      document.getElementById('password').value = password;
+      
+      // Add a subtle highlight effect
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      
+      usernameInput.style.background = 'rgba(79, 172, 254, 0.1)';
+      passwordInput.style.background = 'rgba(79, 172, 254, 0.1)';
+      
+      setTimeout(() => {
+        usernameInput.style.background = '';
+        passwordInput.style.background = '';
+      }, 1000);
+    }
+
+    // Form submission with loading state
+	// Enhanced login form handler with better error handling
+	document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // stop default form submit
+    
+    const submitBtn = document.getElementById('loginBtn');
+    const spinner = document.getElementById('loadingSpinner');
+    const btnText = document.getElementById('btnText');
+    
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    
+    // Basic validation
+    if (!username || !password) {
+        document.getElementById('loginErrorMessage').textContent = "Please enter both username and password.";
+        openModal('loginErrorModal');
+        return;
+    }
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    spinner.style.display = 'inline-block';
+    btnText.textContent = 'Signing In...';
+    
+    // Try JSON first, then fall back to form data if needed
+    const sendLoginRequest = (useFormData = false) => {
+        let requestOptions;
+        
+        if (useFormData) {
+            // Send as form data (traditional way)
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            requestOptions = {
+                method: 'POST',
+                body: formData
+            };
+        } else {
+            // Send as JSON
+            requestOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            };
+        }
+        
+        return fetch('/api/login', requestOptions)
+            .then(res => {
+                // Check if response is JSON or text
+                const contentType = res.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return res.json();
+                } else {
+                    return res.text().then(text => {
+                        // If the server redirects or returns HTML, handle it
+                        if (res.ok && (text.includes('<html') || res.url.includes('/app'))) {
+                            return { success: true, redirect: res.url };
+                        }
+                        return { success: false, message: text || 'Login failed' };
+                    });
+                }
+            });
+    };
+    
+    // First attempt with JSON
+    sendLoginRequest(false)
+        .then(response => {
+            // Reset button state
+            submitBtn.disabled = false;
+            spinner.style.display = 'none';
+            btnText.textContent = 'Sign In';
+            
+            console.log('Login response:', response); // Debug log
+            
+            if (response.success) {
+                // Handle successful login
+                if (response.redirect) {
+                    window.location.href = response.redirect;
+                } else {
+                    window.location.href = '/app';
+                }
+            } else {
+                // Show error message
+                document.getElementById('loginErrorMessage').textContent =
+                    response.message || "Invalid username or password. Please try again.";
+                openModal('loginErrorModal');
+            }
+        })
+        .catch(err => {
+            console.error('JSON login failed, trying form data:', err);
+            
+            // If JSON fails, try with form data
+            sendLoginRequest(true)
+                .then(response => {
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    spinner.style.display = 'none';
+                    btnText.textContent = 'Sign In';
+                    
+                    if (response.success) {
+                        if (response.redirect) {
+                            window.location.href = response.redirect;
+                        } else {
+                            window.location.href = '/app/';
+                        }
+                    } else {
+                        document.getElementById('loginErrorMessage').textContent =
+                            response.message || "Invalid username or password. Please try again.";
+                        openModal('loginErrorModal');
+                    }
+                })
+                .catch(err2 => {
+                    console.error('Both login methods failed:', err2);
+                    submitBtn.disabled = false;
+                    spinner.style.display = 'none';
+                    btnText.textContent = 'Sign In';
+                    document.getElementById('loginErrorMessage').textContent =
+                        "Connection error. Please check your connection and try again.";
+                    openModal('loginErrorModal');
+                });
+        });
+});
+
+    // Placeholder functions for footer links
+    function showComingSoon(feature) {
+      alert(`🚀 ${feature} feature is coming soon!\n\nThis will be available in the next update.`);
+    }
+
+    function showAbout() {
+      alert(`🛢️ Tank MTO Estimator Suite v2.0\n\nProfessional engineering tools for accurate material take-offs.\n\nDeveloped by: M.O. Gonda\nRelease: August 2025`);
+    }
+
+    function showSupport() {
+      alert(`💬 Technical Support\n\nFor technical assistance or feature requests:\n\n📧 Email: support@tankmto.com\n📞 Phone: +1-XXX-XXX-XXXX\n\nBusiness hours: Mon-Fri 9AM-5PM EST`);
+    }
+
+    function showPrivacy() {
+      alert(`🔒 Privacy Policy\n\nYour data security is our priority:\n\n• All calculations performed locally\n• No personal data stored on servers\n• Session-based authentication only\n• GDPR compliant data handling`);
+    }
+
+    // Enhanced keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        // Ctrl+Enter submits form
+        document.getElementById('loginForm').submit();
+      }
+    });
+
+    // Auto-focus username field on load
+    window.addEventListener('load', function() {
+      document.getElementById('username').focus();
+    });
+
+    // Add input validation feedback
+    document.querySelectorAll('.form-input').forEach(input => {
+      input.addEventListener('blur', function() {
+        if (this.value.length > 0) {
+          this.style.borderColor = 'rgba(72, 187, 120, 0.5)';
+        }
+      });
+      
+      input.addEventListener('focus', function() {
+        this.style.borderColor = 'rgba(102, 126, 234, 0.5)';
+      });
+    });
+	
+	// Modal controls
+	function openModal(id) {
+		document.getElementById(id).style.display = "block";
+	}
+	
+	function closeModal(id) {
+		document.getElementById(id).style.display = "none";
+	}	
+	
+	window.addEventListener('click', function(e) {
+		// Only allow closing of non-form modals when clicking outside
+		if (e.target.classList.contains('modal')) {
+			const modalId = e.target.id;
+			// Prevent closing signup modal and other form modals by outside click
+			if (modalId !== 'signUpModal' && modalId !== 'signUpSuccessModal' && modalId !== 'signUpErrorModal') {
+				e.target.style.display = 'none';
+			}
+		}
+		});
+	
+	// Show logout message if redirected from logout
+	const params = new URLSearchParams(window.location.search);
+	if (params.get("logout") === "1") {
+	// Create and show logout success message
+	const logoutMessage = document.createElement('div');
+	logoutMessage.innerHTML = `
+		<div style="
+		background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+		border: 1px solid rgba(79, 172, 254, 0.3);
+		color: #4facfe;
+		padding: 1rem;
+		border-radius: 12px;
+		margin-bottom: 1.5rem;
+		text-align: center;
+		font-size: 0.9rem;
+		font-weight: 500;
+		">
+		<strong>? Successfully Signed Out</strong><br>
+		You have been logged out of Tank MTO Estimator Suite.
+		</div>
+	`;
+	
+	// Insert the message before the form
+	const form = document.getElementById('loginForm');
+	form.parentNode.insertBefore(logoutMessage.firstElementChild, form);
+	
+	// Auto-hide message after 5 seconds
+	setTimeout(() => {
+		const msgElement = document.querySelector('[style*="rgba(79, 172, 254, 0.1)"]');
+		if (msgElement) {
+		msgElement.style.transition = 'opacity 0.5s ease';
+		msgElement.style.opacity = '0';
+		setTimeout(() => msgElement.remove(), 500);
+		}
+	}, 5000);
+	
+	// Clean up URL
+	window.history.replaceState({}, document.title, 'login.html');
+	}	
+  </script>
+</body>
+</html>

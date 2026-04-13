@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script defer src="/_vercel/insights/script.js"></script>
+  <title>Admin Access - Tank MTO Estimator Suite</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    :root {
+      --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --primary-hover: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      --secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      --danger: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+      --text-primary: #2d3748;
+      --text-secondary: #4a5568;
+      --text-light: #718096;
+      --bg-primary: #f7fafc;
+      --bg-card: rgba(255, 255, 255, 0.95);
+      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      --border-radius: 16px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+	
+	.header-title {
+		font-size: 2rem;
+		font-weight: 700;
+		background: var(--primary);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		margin-bottom: 0.5rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.header-icon {
+		width: 2rem;
+		height: 2rem;
+		flex-shrink: 0;
+		fill: currentColor;
+		display: block;
+		margin-top: 0.3rem;
+		margin-right: 0.5rem;
+	}
+	
+    .back-btn {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+      color: #667eea;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .dashboard-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .dashboard-card h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .dashboard-number {
+      font-size: 3rem;
+      font-weight: 700;
+      background: var(--primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .management-sections {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .section-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-icon {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .user-list {
+      max-height: 500px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .user-item {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .user-item:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: translateX(4px);
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      background: var(--primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .user-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      min-width: 0; /* Prevents grid overflow */
+    }
+
+    .user-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-field-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+
+    .user-field-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-size: 0.85rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-primary {
+      background: var(--success);
+      color: white;
+      box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      box-shadow: 0 8px 20px rgba(79, 172, 254, 0.5);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+      box-shadow: 0 4px 12px rgba(252, 70, 107, 0.3);
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      box-shadow: 0 8px 20px rgba(252, 70, 107, 0.5);
+    }
+
+    .btn-secondary {
+      background: #718096;
+      color: white;
+      box-shadow: 0 4px 12px rgba(113, 128, 150, 0.3);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      box-shadow: 0 8px 20px rgba(113, 128, 150, 0.5);
+    }
+
+    .add-user-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+      margin-top: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      border: 2px solid rgba(102, 126, 234, 0.1);
+      border-radius: 12px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: rgba(102, 126, 234, 0.5);
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-light);
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.6s ease;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+      background: var(--primary-hover);
+    }
+
+    .login-btn:hover::before {
+      left: 100%;
+    }
+
+    .login-btn:active {
+      transform: translateY(-1px) scale(0.98);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .bulk-actions {
+      background: var(--bg-card);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .bulk-actions h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .action-buttons {
+      display: flex;
+	  flex-wrap: wrap;
+      gap: 1rem;
+	  justify-content: center;
+    }
+
+    .action-btn {
+	  text-decoration: none;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 12px;
+	  font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: center;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      position: relative;
+    }
+
+    .action-btn:hover:not(:disabled) {
+      transform: translateY(-4px) scale(1.02);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .action-refresh {
+      background: white;
+      color: var(--text-primary);
+	  border: 2px solid #e2e8f0;
+    }
+
+    .action-refresh:hover:not(:disabled) {
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.6);
+    }
+
+    .action-clear {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 8px 25px rgba(255, 236, 210, 0.4);
+    }
+
+    .action-clear:hover:not(:disabled) {
+      box-shadow: 0 5px 15px rgba(255, 236, 210, 0.6);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-light);
+    }
+
+    .empty-state .emoji {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    /* Status indicators */
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(255, 193, 7, 0.2);
+      color: #d69e2e;
+    }
+
+    .status-approved {
+      background: rgba(72, 187, 120, 0.2);
+      color: #38a169;
+    }
+
+    .status-active {
+      background: rgba(79, 172, 254, 0.2);
+      color: #3182ce;
+    }
+
+    /* Loading states */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    .btn .spinner,
+    .action-btn .spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .btn .btn-text,
+    .action-btn .btn-text {
+      transition: opacity 0.3s ease;
+    }
+
+    .btn.loading .btn-text,
+    .action-btn.loading .btn-text {
+      opacity: 0;
+    }
+
+    .btn.loading .spinner,
+    .action-btn.loading .spinner {
+      display: block;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Notifications */
+    .notification {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      z-index: 10000;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-hover);
+      transform: translateX(400px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-width: 400px;
+      cursor: pointer;
+    }
+
+    .notification-success {
+      background: rgba(72, 187, 120, 0.95);
+      color: white;
+      border: 1px solid rgba(72, 187, 120, 0.3);
+    }
+
+    .notification-error {
+      background: rgba(252, 70, 107, 0.95);
+      color: white;
+      border: 1px solid rgba(252, 70, 107, 0.3);
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .notification-icon {
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .notification-message {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      margin: 5% auto;
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--shadow-hover);
+      position: relative;
+      animation: modalSlideIn 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .modal-content h2 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      background: var(--primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .modal-content p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .modal-content strong {
+      color: var(--text-primary);
+    }
+
+    .close {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .close:hover {
+      color: #e53e3e;
+      background: rgba(229, 62, 62, 0.1);
+      transform: scale(1.1);
+    }
+
+    /* Confirmation Modal Styles */
+    .confirm-modal-content {
+      text-align: center;
+    }
+
+    .confirm-modal-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .confirm-modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .confirm-modal-message {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .modal-btn {
+      padding: 0.875rem 2rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      min-width: 120px;
+      position: relative;
+    }
+
+    .modal-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .modal-btn-primary {
+      background: var(--danger);
+      color: white;
+      box-shadow: 0 4px 12px rgba(252, 70, 107, 0.3);
+    }
+
+    .modal-btn-primary:hover {
+      box-shadow: 0 8px 20px rgba(252, 70, 107, 0.5);
+    }
+
+    .modal-btn-secondary {
+      background: #718096;
+      color: white;
+      box-shadow: 0 4px 12px rgba(113, 128, 150, 0.3);
+    }
+
+    .modal-btn-secondary:hover {
+      box-shadow: 0 8px 20px rgba(113, 128, 150, 0.5);
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes modalSlideIn {
+      from { 
+        transform: translateY(-50px); 
+        opacity: 0; 
+      }
+      to { 
+        transform: translateY(0); 
+        opacity: 1; 
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .dashboard-grid,
+      .management-sections {
+        grid-template-columns: 1fr;
+      }
+
+      .add-user-form {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .back-btn {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin-bottom: 2rem;
+        width: fit-content;
+      }
+
+      .header {
+        padding: 1.5rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .section-card {
+        padding: 1.5rem;
+      }
+
+      .user-item {
+        grid-template-columns: 50px 1fr;
+        gap: 1rem;
+      }
+
+      .user-details {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .user-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+      }
+
+      .notification {
+        right: 1rem;
+        left: 1rem;
+        max-width: none;
+        transform: translateY(-100px);
+      }
+
+      .notification.show {
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+		<h1 class="header-title">
+			<img src="icon\access-bg.svg" alt="Tool icon" class="header-icon">	
+			Admin Access
+		</h1>
+      <p>User Management & System Administration</p>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="dashboard-card">
+        <h3>Active Users</h3>
+        <div class="dashboard-number" id="activeUsersCount">-</div>
+        <div class="dashboard-label">Currently Approved</div>
+      </div>
+      <div class="dashboard-card">
+        <h3>Pending Requests</h3>
+        <div class="dashboard-number" id="pendingUsersCount">-</div>
+        <div class="dashboard-label">Awaiting Review</div>
+      </div>
+    </div>
+
+    <div class="management-sections">
+      <div class="section-card">
+        <div class="section-title">
+          <div class="section-icon">👥</div>
+          <span>Active Users</span>
+          <button class="btn btn-primary" style="margin-left:auto;" onclick="openModal('signUpModal')">
+            ➕ Add User
+          </button>
+        </div>
+        <div class="user-list" id="activeUsersList">
+          <div class="empty-state">
+            <span class="emoji">⏳</span>
+            Loading users...
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title">
+          <div class="section-icon">⏰</div>
+          <span>Pending Requests</span>
+		  <button class="btn btn-primary" style="margin-left:auto;" id="clearBtn">
+			🗑️ Clear All Pending
+		  </button>
+        </div>
+        <div class="user-list" id="pendingUsersList">
+          <div class="empty-state">
+            <span class="emoji">⏳</span>
+            Loading pending requests...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bulk-actions">
+      <h3>
+        <div class="section-icon">⚙️</div>
+        System Actions
+      </h3>
+      <div class="action-buttons">
+        <button class="action-btn action-clear" id="refreshBtn">
+          <span>🔄</span>
+          <span class="btn-text">Refresh Data</span>
+          <div class="spinner"></div>
+        </button>
+		<a href="homepage.html" class="action-btn action-refresh">
+		<span>🏠</span>
+		<span class="btn-text">Home</span>
+		</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div id="signUpModal" class="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal('signUpModal')">&times;</button>
+      <h2>✏️ Sign Up</h2>
+      <form id="signUpForm" onsubmit="submitSignUp(event)">
+        <div class="form-group">
+          <label class="form-label" for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="lastName">Last Name</label>
+          <input type="text" id="lastName" name="lastName" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" name="email" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="usernameSignUp">Desired Username</label>
+          <input type="text" id="usernameSignUp" name="usernameSignUp" class="form-input" required>
+        </div>
+		<div class="form-group">
+			<label class="form-label" for="passwordSignUp">Password</label>
+			<input type="password" id="passwordSignUp" name="passwordSignUp" class="form-input" required>
+		</div>			
+        <button type="submit" class="login-btn">Submit</button>
+        <p style="font-size:0.8rem; margin-top:1rem; color:var(--text-secondary);">
+          Press Submit to complete your profile setup.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteConfirmModal" class="modal">
+    <div class="modal-content confirm-modal-content">
+      <button class="close" onclick="closeModal('deleteConfirmModal')">&times;</button>
+      <span class="confirm-modal-icon">🗑️</span>
+      <div class="confirm-modal-title">Delete User</div>
+      <div class="confirm-modal-message" id="deleteConfirmMessage">
+        Are you sure you want to delete this user? This action cannot be undone.
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-primary" id="confirmDeleteBtn">Delete</button>
+        <button class="modal-btn modal-btn-secondary" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Confirmation Modal -->
+  <div id="rejectConfirmModal" class="modal">
+    <div class="modal-content confirm-modal-content">
+      <button class="close" onclick="closeModal('rejectConfirmModal')">&times;</button>
+      <span class="confirm-modal-icon">❌</span>
+      <div class="confirm-modal-title">Reject User Request</div>
+      <div class="confirm-modal-message" id="rejectConfirmMessage">
+        Are you sure you want to reject this user's registration request? This will permanently remove their application.
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-primary" id="confirmRejectBtn">Reject</button>
+        <button class="modal-btn modal-btn-secondary" onclick="closeModal('rejectConfirmModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear All Pending Confirmation Modal -->
+  <div id="clearAllConfirmModal" class="modal">
+    <div class="modal-content confirm-modal-content">
+      <button class="close" onclick="closeModal('clearAllConfirmModal')">&times;</button>
+      <span class="confirm-modal-icon">🧹</span>
+      <div class="confirm-modal-title">Clear All Pending Requests</div>
+      <div class="confirm-modal-message">
+        Are you sure you want to clear all pending requests? This action cannot be undone and will permanently remove all pending user registrations.
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-primary" id="confirmClearAllBtn">Clear All</button>
+        <button class="modal-btn modal-btn-secondary" onclick="closeModal('clearAllConfirmModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let isLoading = false;
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('Admin page loaded');
+      const isAdmin = await checkAdminPermissions();
+      if (isAdmin) {
+        setupEventListeners();
+        refreshAllData();
+      }
+    });
+
+    function setupEventListeners() {
+      // Refresh button
+      document.getElementById('refreshBtn').addEventListener('click', refreshAllData);
+      
+      // Clear pending button
+      document.getElementById('clearBtn').addEventListener('click', clearAllPending);
+
+      // Handle page visibility changes
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && !isLoading) {
+          updateDashboard();
+        }
+      });
+
+      // Connection monitoring
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+    }
+
+    async function checkAdminPermissions() {
+      try {
+        const response = await fetch('/api/current-user');
+        const userData = await response.json();
+        
+        if (!userData.username) {
+          showError('Not logged in. Redirecting...');
+          setTimeout(() => window.location.href = 'login.html', 2000);
+          return false;
+        }
+        
+        if (userData.role !== 'admin' && userData.username !== 'admin') {
+          showError('Access denied. Admin privileges required.');
+          setTimeout(() => window.location.href = 'homepage.html', 2000);
+          return false;
+        }
+        
+        console.log('Admin access granted for:', userData.username);
+        return true;
+      } catch (error) {
+        console.error('Error checking admin permissions:', error);
+        showError('Unable to verify admin permissions');
+        setTimeout(() => window.location.href = 'homepage.html', 2000);
+        return false;
+      }
+    }
+
+    async function refreshAllData() {
+      if (isLoading) return;
+      isLoading = true;
+
+      const refreshBtn = document.getElementById('refreshBtn');
+      setButtonLoading(refreshBtn, true);
+
+      try {
+        await Promise.all([
+          loadActiveUsers(),
+          loadPendingUsers(),
+          updateDashboard()
+        ]);
+        showSuccess('Data refreshed successfully');
+      } catch (error) {
+        console.error('Error refreshing data:', error);
+        showError('Failed to refresh data');
+      } finally {
+        isLoading = false;
+        setButtonLoading(refreshBtn, false);
+      }
+    }
+
+    async function loadActiveUsers() {
+      const container = document.getElementById('activeUsersList');
+      container.innerHTML = '<div class="empty-state"><span class="emoji">⏳</span>Loading users...</div>';
+
+      try {
+        const response = await fetch('/api/users/active');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const users = await response.json();
+
+        if (users.length === 0) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">👤</span>No active users found</div>';
+          return;
+        }
+
+        container.innerHTML = users.map(user => `
+          <div class="user-item" data-user="${user.username}">
+            <div class="user-avatar">${getInitials(user.firstName, user.lastName, user.username)}</div>
+            <div class="user-details">
+              <div class="user-field">
+                <div class="user-field-label">Name</div>
+                <div class="user-field-value">${formatName(user.firstName, user.lastName)}</div>
+              </div>
+              <div class="user-field">
+                <div class="user-field-label">Email</div>
+                <div class="user-field-value">${user.email || 'N/A'}</div>
+              </div>
+              <div class="user-field">
+                <div class="user-field-label">Username</div>
+                <div class="user-field-value">${user.username}</div>
+              </div>
+              <div class="user-field">
+                <div class="user-field-label">Status</div>
+                <div class="user-field-value"><span class="status-badge status-active">Active</span></div>
+              </div>
+            </div>
+            <div class="user-actions">
+              <button class="btn btn-danger" onclick="deleteUser('${user.username}')" 
+                      ${user.username === 'admin' ? 'disabled title="Cannot delete admin user"' : ''}>
+                <span class="btn-text">Delete</span>
+                <div class="spinner"></div>
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error loading active users:', error);
+        container.innerHTML = '<div class="empty-state"><span class="emoji">❌</span>Error loading users</div>';
+      }
+    }
+
+    async function loadPendingUsers() {
+      const container = document.getElementById('pendingUsersList');
+      container.innerHTML = '<div class="empty-state"><span class="emoji">⏳</span>Loading pending requests...</div>';
+
+      try {
+        const response = await fetch('/api/users/pending');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const users = await response.json();
+
+        if (users.length === 0) {
+          container.innerHTML = '<div class="empty-state"><span class="emoji">✅</span>No pending requests</div>';
+          return;
+        }
+
+        container.innerHTML = users.map(user => `
+          <div class="user-item" data-user="${user.username}">
+            <div class="user-avatar">${getInitials(user.firstName, user.lastName, user.username)}</div>
+            <div class="user-details">
+              <div class="user-field">
+                <div class="user-field-label">Name</div>
+                <div class="user-field-value">${formatName(user.firstName, user.lastName)}</div>
+              </div>
+              <div class="user-field">
+                <div class="user-field-label">Email</div>
+                <div class="user-field-value">${user.email || 'N/A'}</div>
+              </div>
+              <div class="user-field">
+                <div class="user-field-label">Username</div>
+                <div class="user-field-value">${user.username}</div>
+              </div>
+              <div class="user-field">
+                <div class="user-field-label">Status</div>
+                <div class="user-field-value"><span class="status-badge status-pending">Pending</span></div>
+              </div>
+            </div>
+            <div class="user-actions">
+              <button class="btn btn-primary" onclick="approveUser('${user.username}')">
+                <span class="btn-text">Approve</span>
+                <div class="spinner"></div>
+              </button>
+              <button class="btn btn-danger" onclick="rejectUser('${user.username}')">
+                <span class="btn-text">Reject</span>
+                <div class="spinner"></div>
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Error loading pending users:', error);
+        container.innerHTML = '<div class="empty-state"><span class="emoji">❌</span>Error loading pending requests</div>';
+      }
+    }
+
+    async function updateDashboard() {
+      try {
+        const [activeResponse, pendingResponse] = await Promise.all([
+          fetch('/api/users/active'),
+          fetch('/api/users/pending')
+        ]);
+
+        if (activeResponse.ok && pendingResponse.ok) {
+          const activeUsers = await activeResponse.json();
+          const pendingUsers = await pendingResponse.json();
+
+          document.getElementById('activeUsersCount').textContent = activeUsers.length;
+          document.getElementById('pendingUsersCount').textContent = pendingUsers.length;
+        } else {
+          throw new Error('Failed to fetch dashboard data');
+        }
+
+      } catch (error) {
+        console.error('Error updating dashboard:', error);
+        document.getElementById('activeUsersCount').textContent = '?';
+        document.getElementById('pendingUsersCount').textContent = '?';
+      }
+    }
+
+    // MODERN MODAL-BASED CONFIRMATION FUNCTIONS
+    async function deleteUser(username) {
+      // Show confirmation modal instead of browser confirm
+      showDeleteConfirmation(username);
+    }
+
+    function showDeleteConfirmation(username) {
+      const modal = document.getElementById('deleteConfirmModal');
+      const message = document.getElementById('deleteConfirmMessage');
+      const confirmBtn = document.getElementById('confirmDeleteBtn');
+      
+      message.textContent = `Are you sure you want to delete the application for ${username}? This action cannot be undone.`;
+      
+      // Remove any existing event listeners
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      
+      // Add new event listener
+      newConfirmBtn.addEventListener('click', () => {
+        closeModal('deleteConfirmModal');
+        executeDeleteUser(username);
+      });
+      
+      modal.style.display = 'block';
+    }
+
+    async function executeDeleteUser(username) {
+      const userItem = document.querySelector(`[data-user="${username}"]`);
+      const button = userItem?.querySelector('.btn-danger');
+      
+      if (button) setButtonLoading(button, true);
+
+      try {
+        const response = await fetch('/api/users/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showSuccess(`User "${username}" deleted successfully`);
+          await refreshAllData();
+        } else {
+          showError(result.message || 'Failed to delete user');
+        }
+
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        showError('Failed to delete user. Please check your connection.');
+      } finally {
+        if (button) setButtonLoading(button, false);
+      }
+    }
+
+    async function approveUser(username) {
+      const userItem = document.querySelector(`[data-user="${username}"]`);
+      const button = userItem?.querySelector('.btn-primary');
+      
+      if (button) setButtonLoading(button, true);
+
+      try {
+        const response = await fetch('/api/users/approve', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showSuccess(`User "${username}" approved successfully`);
+          await refreshAllData();
+        } else {
+          showError(result.message || 'Failed to approve user');
+        }
+
+      } catch (error) {
+        console.error('Error approving user:', error);
+        showError('Failed to approve user. Please check your connection.');
+      } finally {
+        if (button) setButtonLoading(button, false);
+      }
+    }
+
+    async function rejectUser(username) {
+      // Show confirmation modal instead of browser confirm
+      showRejectConfirmation(username);
+    }
+
+    function showRejectConfirmation(username) {
+      const modal = document.getElementById('rejectConfirmModal');
+      const message = document.getElementById('rejectConfirmMessage');
+      const confirmBtn = document.getElementById('confirmRejectBtn');
+      
+      message.textContent = `Are you sure you want to reject the application request for user ${username}?`;
+      
+      // Remove any existing event listeners
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      
+      // Add new event listener
+      newConfirmBtn.addEventListener('click', () => {
+        closeModal('rejectConfirmModal');
+        executeRejectUser(username);
+      });
+      
+      modal.style.display = 'block';
+    }
+
+    async function executeRejectUser(username) {
+      const userItem = document.querySelector(`[data-user="${username}"]`);
+      const button = userItem?.querySelector('.btn-danger');
+      
+      if (button) setButtonLoading(button, true);
+
+      try {
+        const response = await fetch('/api/users/reject', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showSuccess(`User "${username}" rejected successfully`);
+          await refreshAllData();
+        } else {
+          showError(result.message || 'Failed to reject user');
+        }
+
+      } catch (error) {
+        console.error('Error rejecting user:', error);
+        showError('Failed to reject user. Please check your connection.');
+      } finally {
+        if (button) setButtonLoading(button, false);
+      }
+    }
+
+    async function clearAllPending() {
+      // Show confirmation modal instead of browser confirm
+      showClearAllConfirmation();
+    }
+
+    function showClearAllConfirmation() {
+      const modal = document.getElementById('clearAllConfirmModal');
+      const confirmBtn = document.getElementById('confirmClearAllBtn');
+      
+      // Remove any existing event listeners
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      
+      // Add new event listener
+      newConfirmBtn.addEventListener('click', () => {
+        closeModal('clearAllConfirmModal');
+        executeClearAllPending();
+      });
+      
+      modal.style.display = 'block';
+    }
+
+    async function executeClearAllPending() {
+      const button = document.getElementById('clearBtn');
+      setButtonLoading(button, true);
+
+      try {
+        const response = await fetch('/api/users/clear-pending', {
+          method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showSuccess('All pending requests cleared successfully');
+          await refreshAllData();
+        } else {
+          showError(result.message || 'Failed to clear pending requests');
+        }
+
+      } catch (error) {
+        console.error('Error clearing pending requests:', error);
+        showError('Failed to clear pending requests. Please check your connection.');
+      } finally {
+        setButtonLoading(button, false);
+      }
+    }
+
+    function setButtonLoading(button, loading) {
+      if (!button) return;
+      
+      if (loading) {
+        button.classList.add('loading');
+        button.disabled = true;
+      } else {
+        button.classList.remove('loading');
+        button.disabled = false;
+      }
+    }
+
+    function getInitials(firstName, lastName, username) {
+      if (firstName && lastName) {
+        return (firstName[0] + lastName[0]).toUpperCase();
+      }
+      if (firstName) {
+        return firstName.substring(0, 2).toUpperCase();
+      }
+      if (!username) return '??';
+      const parts = username.split(/[.\-_\s]+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return username.substring(0, 2).toUpperCase();
+    }
+
+    function formatName(firstName, lastName) {
+      if (firstName && lastName) {
+        const maxLength = 20; // Truncate if too long
+        const fullName = `${firstName} ${lastName}`;
+        return fullName.length > maxLength ? fullName.substring(0, maxLength) + '...' : fullName;
+      }
+      if (firstName) return firstName;
+      if (lastName) return lastName;
+      return 'N/A';
+    }
+
+    function showSuccess(message) {
+      showNotification(message, 'success');
+    }
+
+    function showError(message) {
+      showNotification(message, 'error');
+    }
+
+    function showNotification(message, type) {
+      // Remove any existing notifications
+      dismissNotifications();
+
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.innerHTML = `
+        <div class="notification-content">
+          <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+          <span class="notification-message">${message}</span>
+        </div>
+      `;
+
+      // Add to page
+      document.body.appendChild(notification);
+
+      // Show notification
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+
+      // Auto remove after 4 seconds
+      setTimeout(() => {
+        dismissNotification(notification);
+      }, 4000);
+
+      // Allow manual dismiss on click
+      notification.addEventListener('click', () => {
+        dismissNotification(notification);
+      });
+    }
+
+    function dismissNotification(notification) {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 400);
+    }
+
+    function dismissNotifications() {
+      const notifications = document.querySelectorAll('.notification');
+      notifications.forEach(notification => {
+        dismissNotification(notification);
+      });
+    }
+
+    function handleOnline() {
+      showSuccess('Connection restored. Refreshing data...');
+      setTimeout(() => {
+        refreshAllData();
+      }, 1000);
+    }
+
+    function handleOffline() {
+      showError('Connection lost. Some features may not work properly.');
+    }
+
+    // Auto-refresh dashboard every 30 seconds when page is visible
+    setInterval(() => {
+      if (!isLoading && document.visibilityState === 'visible') {
+        updateDashboard();
+      }
+    }, 30000);
+
+    // Performance monitoring
+    let performanceWarningShown = false;
+
+    function checkPerformance() {
+      if (performance.now() > 5000 && !performanceWarningShown) {
+        console.warn('Admin page took longer than expected to load');
+        performanceWarningShown = true;
+      }
+    }
+
+    // Check performance after 5 seconds
+    setTimeout(checkPerformance, 5000);
+
+// Fixed submitSignUp function for admin panel
+	function submitSignUp(event) {
+	event.preventDefault();
+	
+	// Get all form data including password
+	const data = {
+		firstName: document.getElementById('firstName').value,
+		lastName: document.getElementById('lastName').value,
+		email: document.getElementById('email').value,
+		username: document.getElementById('usernameSignUp').value,
+		password: document.getElementById('passwordSignUp').value
+	};
+	
+	// Validate all fields are present
+	if (!data.firstName || !data.lastName || !data.email || !data.username || !data.password) {
+		showError('All fields are required');
+		return;
+	}
+	
+	// Show loading state
+	const btn = event.target.querySelector('button[type="submit"]');
+	btn.disabled = true;
+	btn.textContent = 'Creating User...';
+	
+	// Send to the direct user creation endpoint (not signup)
+	fetch('/api/users/add', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	})
+	.then(res => res.json())
+	.then(response => {
+		btn.disabled = false;
+		btn.textContent = 'Submit';
+		
+		if (response.success !== false) { // Success if no explicit failure
+		showSuccess(response.message || 'User created successfully');
+		clearSignUpForm();
+		closeModal('signUpModal');
+		refreshAllData();
+		} else {
+		showError(response.message || 'Failed to create user');
+		}
+	})
+	.catch(err => {
+		console.error('User creation failed:', err);
+		btn.disabled = false;
+		btn.textContent = 'Submit';
+		showError('Network error. Please try again later.');
+	});
+	}
+
+    function clearSignUpForm() {
+      document.getElementById('firstName').value = '';
+      document.getElementById('lastName').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('usernameSignUp').value = '';
+    }
+
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.style.display = 'block';
+        // Clear form when opening signup modal
+        if (id === 'signUpModal') {
+          clearSignUpForm();
+        }
+      }
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Close ONLY confirmation modals when clicking outside (not the signup form)
+    window.addEventListener('click', function(event) {
+      const confirmationModals = ['deleteConfirmModal', 'rejectConfirmModal', 'clearAllConfirmModal'];
+      
+      confirmationModals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target === modal) {
+          closeModal(modalId);
+        }
+      });
+    });
+
+    // Add keyboard support for modals (ESC to close)
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const openModals = document.querySelectorAll('.modal[style*="block"]');
+        openModals.forEach(modal => {
+          modal.style.display = 'none';
+        });
+        dismissNotifications();
+      }
+      
+      // F5 refresh shortcut
+      if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+        e.preventDefault();
+        refreshAllData();
+      }
+    });
+
+    // Console welcome message
+    console.log('%c🛠️ Admin Access Console', 'font-size: 20px; color: #667eea; font-weight: bold;');
+    console.log('%cAdmin panel loaded successfully. Available functions:', 'color: #4a5568;');
+    console.log('%c- refreshAllData()', 'color: #718096;');
+    console.log('%c- loadActiveUsers()', 'color: #718096;');
+    console.log('%c- loadPendingUsers()', 'color: #718096;');
+    console.log('%c- updateDashboard()', 'color: #718096;');
+
+    console.log('Admin Access page fully initialized and ready');
+  </script>
+</body>
+</html>

@@ -1,0 +1,2369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script defer src="/_vercel/insights/script.js"></script>
+    <title>Tank Tertiary MTO Estimator</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-solid: #667eea;
+            --primary-hover: #5a6fd8;
+            --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #f7fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; bottom: 20%; left: 20%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 930px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+		.header-title {
+			font-size: 2rem;
+			font-weight: 700;
+			background: var(--primary);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 0.5rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.header-icon {
+			width: 2.6rem;
+			height: 2.6rem;
+			flex-shrink: 0;
+			fill: currentColor;
+			display: block;
+			margin-top: 0.3rem;
+			margin-right: 0.5rem;
+		}
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .wizard-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 33.33%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #48bb78;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--primary-solid);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .input-group input:valid, .input-group select:valid {
+            border-color: #48bb78;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 2.2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .shape-selector {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .shape-selector:hover {
+            border-color: var(--primary-solid);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .shape-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .shape-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .component-result {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .component-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .component-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .component-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .component-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .material-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .material-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .material-item::before {
+            content: "📋";
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: var(--primary-solid);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-solid);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-solid);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .calculation-info {
+            background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+            border: 1px solid #81e6d9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calculation-info h3 {
+            color: #234e52;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .calculation-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .spec-item {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #81e6d9;
+        }
+
+        .spec-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #38b2ac;
+        }
+
+        .spec-label {
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+			<h1 class="header-title">
+				<img src="icon\tertiary-bg.svg" alt="Tool icon" class="header-icon">		
+				Tank Tertiary MTO Estimator
+			</h1>
+            <p class="header-subtitle">Professional tool for calculating spiral stair & roof handrail material requirements</p>
+        </div>
+
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" id="step1Indicator">
+                    <span>📝</span>
+					<span>Basic Parameters</span>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <span>🔧</span>
+					<span>Material Selection</span>
+                </div>
+                <div class="step" id="step3Indicator">
+                    <span>📋</span>
+					<span>Material List</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Parameters -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📜</span>
+						Tank & Basic Specifications
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="tankD">Tank Diameter</label>
+                            <input type="number" id="tankD" step="1" value="15000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="tankH">Tank Height</label>
+                            <input type="number" id="tankH" step="1" value="20000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="shellThk">Shell Thickness</label>
+                            <input type="number" id="shellThk" step="1" value="16" required>
+                            <span class="unit-label">mm</span>
+                        </div>						
+                        <div class="input-group">
+                            <label for="roofThk">Roof Thickness</label>
+                            <input type="number" id="roofThk" step="1" value="14" required>
+                            <span class="unit-label">mm</span>
+                        </div>													
+                        <div class="input-group">
+                            <label for="roofType">Roof Type</label>
+                            <select id="roofType">
+                                <option value="Fixed Roof" selected>Fixed Roof</option>
+                                <option value="Floating Roof">Floating Roof</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="basicMaterial">Base Material</label>
+                            <input type="text" id="basicMaterial" value="CS" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="materialSpec">Material Specification</label>
+                            <input type="text" id="materialSpec" value="ASTM A36" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🪜</span>
+						Spiral Stair Parameters
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="stepWidth">Step Width</label>
+                            <input type="number" id="stepWidth" step="1" value="250">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="stepLength">Step Length</label>
+                            <input type="number" id="stepLength" step="1" value="700">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="stepOverlap">Step Overlap</label>
+                            <input type="number" id="stepOverlap" step="1" value="0">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="numStringer">Number of Stringers</label>
+                            <select id="numStringer">
+                                <option value="2" selected>2 - Both Sides</option>
+                                <option value="1outer">1 - Outer Side Only</option>
+                                <option value="1inner">1 - Inner Side Only</option>
+                                <option value="1middle">1 - Middle</option>
+                                <option value="0">0 - Not Required</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="platformInterval">Platform Interval</label>
+                            <input type="number" id="platformInterval" step="100" value="3000">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="platformLength">Platform Length</label>
+                            <input type="number" id="platformLength" step="1" value="1500">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🥅</span>
+						Handrail Parameters
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="railHeight">Rail Height</label>
+                            <input type="number" id="railHeight" step="1" value="1500">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="postSpacing">Post Spacing</label>
+                            <input type="number" id="postSpacing" step="10" value="1000">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="gateOpening">Gate Opening</label>
+                            <input type="number" id="gateOpening" step="10" value="700">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="goToStep(2)">
+                        <span>Next Step</span>
+                        <div class="loading-spinner" id="loadingStep1"></div>
+                    </button>
+					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Material Selection -->
+            <div class="step-content" id="step2">
+                <div class="form-section">
+                    
+                    <!-- Roof Handrail Material -->
+                    <div class="shape-selector">
+                        <div class="shape-title">
+                            <span>🔷</span>
+							Handrail Material
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="roofRailShape">Rail Shape Type</label>
+                                <select id="roofRailShape" onchange="updateShapeFields('roofRail')">
+                                    <option value="">-- Select Shape --</option>
+                                    <option value="CHS">CHS</option>
+                                    <option value="RHS">RHS</option>
+									<option value="L-SHAPE">L-SHAPE</option>
+                                    <option value="FLAT_BAR">FLAT BAR</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="roofRailFields" class="shape-fields"></div>
+                    </div>
+
+                    <!-- Roof Handrail Posts -->
+                    <div class="shape-selector">
+                        <div class="shape-title">
+                            <span>🔷</span>
+							Handrail Post Material
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="roofPostShape">Post Shape Type</label>
+                                <select id="roofPostShape" onchange="updateShapeFields('roofPost')">
+                                    <option value="">-- Select Shape --</option>
+                                    <option value="CHS">CHS</option>
+                                    <option value="RHS">RHS</option>
+									<option value="L-SHAPE">L-SHAPE</option>
+                                    <option value="FLAT_BAR">FLAT BAR</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="roofPostFields" class="shape-fields"></div>
+                    </div>
+
+                    <!-- Tread Plate -->
+                    <div class="shape-selector">
+                        <div class="shape-title">
+                            <span>🔷</span>
+							Tread Plate
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="treadPlateShape">Tread Plate Shape Type</label>
+                                <select id="treadPlateShape" onchange="updateShapeFields('treadPlate')">
+                                    <option value="">-- Select Shape --</option>
+                                    <option value="PLATE">PLAIN PLATE</option>
+									<option value="CHECKERED">CHECKERED PLATE</option>
+									<option value="GRATING">STEEL GRATING</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="treadPlateFields" class="shape-fields"></div>
+                    </div>
+
+                    <!-- Platform Plates -->
+                    <div class="shape-selector">
+                        <div class="shape-title">
+                            <span>🔷</span>
+							Platform Deck Plate
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="platformPlateShape">Platform Plate Shape Type</label>
+                                <select id="platformPlateShape" onchange="updateShapeFields('platformPlate')">
+                                    <option value="">-- Select Shape --</option>
+                                    <option value="PLATE">PLAIN PLATE</option>
+									<option value="CHECKERED">CHECKERED PLATE</option>
+									<option value="GRATING">STEEL GRATING</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="platformPlateFields" class="shape-fields"></div>
+                    </div>
+
+                    <!-- Platform Frame -->
+                    <div class="shape-selector">
+                        <div class="shape-title">
+                            <span>🔷</span>
+							Platform Frame
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="platformFrameShape">Platform Frame Shape Type</label>
+                                <select id="platformFrameShape" onchange="updateShapeFields('platformFrame')">
+								<option value="">-- Select Shape --</option>
+								<option value="H-SHAPE">H-SHAPE</option>
+								<option value="C-SHAPE">C-SHAPE</option>
+								<option value="WT-SHAPE">WT-SHAPE</option>
+								<option value="L-SHAPE">L-SHAPE</option>
+								<option value="CHS">CHS</option>
+								<option value="RHS">RHS</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="platformFrameFields" class="shape-fields"></div>
+                    </div>
+
+                    <!-- Platform Support -->
+                    <div class="shape-selector">
+                        <div class="shape-title">
+                            <span>🔷</span>
+							Platform Support
+                        </div>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="platformSupportShape">Platform Support Shape Type</label>
+                                <select id="platformSupportShape" onchange="updateShapeFields('platformSupport')">
+                                    <option value="">-- Select Shape --</option>
+									<option value="H-SHAPE">H-SHAPE</option>
+									<option value="C-SHAPE">C-SHAPE</option>
+									<option value="WT-SHAPE">WT-SHAPE</option>
+									<option value="L-SHAPE">L-SHAPE</option>
+									<option value="CHS">CHS</option>
+									<option value="RHS">RHS</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="platformSupportFields" class="shape-fields"></div>
+                    </div>
+
+					<!-- Stringer -->
+					<div id="stringerSection" class="shape-selector">
+						<div class="shape-title">
+							<span>🔷</span>
+							Stringer
+						</div>
+						<div class="form-grid">
+							<div class="input-group">
+								<label for="stringerShape">Stringer Shape Type</label>
+								<select id="stringerShape" onchange="updateShapeFields('stringer')">
+									<option value="">-- Select Shape --</option>
+									<option value="H-SHAPE">H-SHAPE</option>
+									<option value="C-SHAPE">C-SHAPE</option>
+									<option value="WT-SHAPE">WT-SHAPE</option>
+									<option value="L-SHAPE">L-SHAPE</option>
+									<option value="CHS">CHS</option>
+									<option value="RHS">RHS</option>
+								</select>
+							</div>
+						</div>
+						<div id="stringerFields" class="shape-fields"></div>
+					</div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="calculateMTO()">
+                        <span>Calculate MTO</span>
+                        <div class="loading-spinner" id="loadingStep2"></div>
+                    </button>
+					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 3: Results -->
+            <div class="step-content" id="step3">
+                <div id="calculationInfo"></div>
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="results-section" id="results"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+		// Material density constants (kg/m3)
+		const MATERIAL_DENSITIES = {
+			'CS': 7850, // Carbon Steel
+			'SS': 8000, // Stainless Steel
+			'AL': 2700  // Aluminum
+		};	
+
+		// Shape calculation functions
+		function calculateShapeProperties(type, dimensions) {
+			let area = 0; // mm2
+			let perimeter = 0; // mm
+			
+			switch(type) {
+				case "H-SHAPE":
+					const hDepth = dimensions.depth;
+					const hFlangeWidth = dimensions.flangeWidth;
+					const hWebThickness = dimensions.webThickness;
+					const hFlangeThickness = dimensions.flangeThickness;
+					area = (2 * hFlangeWidth * hFlangeThickness) + ((hDepth - 2 * hFlangeThickness) * hWebThickness);
+					perimeter = (4 * hFlangeWidth) + (2 * hDepth) - (2 * hWebThickness);
+					break;
+					
+				case "C-SHAPE":
+					const cHeight = dimensions.height;
+					const cFlangeWidth = dimensions.flangeWidth;
+					const cWebThickness = dimensions.webThickness;
+					const cFlangeThickness = dimensions.flangeThickness;
+					area = (2 * cFlangeWidth * cFlangeThickness) + ((cHeight - 2 * cFlangeThickness) * cWebThickness);
+					perimeter = (4 * cFlangeWidth) + (2 * cHeight) - (2 * cWebThickness);
+					break;
+					
+				case "CHS":
+					const chsDiameter = dimensions.diameter;
+					const chsThickness = dimensions.thickness;
+					const outerRadius = chsDiameter / 2;
+					const innerRadius = outerRadius - chsThickness;
+					area = Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+					perimeter = Math.PI * chsDiameter;
+					break;
+					
+				case "RHS":
+					const rhsHeight = dimensions.height;
+					const rhsWidth = dimensions.width;
+					const rhsThickness = dimensions.thickness;
+					const outerArea = rhsHeight * rhsWidth;
+					const innerArea = (rhsHeight - 2 * rhsThickness) * (rhsWidth - 2 * rhsThickness);
+					area = outerArea - innerArea;
+					perimeter = 2 * (rhsHeight + rhsWidth);
+					break;
+					
+				case "FLAT_BAR":
+					const fbWidth = dimensions.width;
+					const fbThickness = dimensions.thickness;
+					area = fbWidth * fbThickness;
+					perimeter = 2 * (fbWidth + fbThickness);
+					break;
+					
+				case "WT-SHAPE":
+					const wtDepth = dimensions.depth;
+					const wtFlangeWidth = dimensions.flangeWidth;
+					const wtWebThickness = dimensions.webThickness;
+					const wtFlangeThickness = dimensions.flangeThickness;
+					area = (wtFlangeWidth * wtFlangeThickness) + ((wtDepth - wtFlangeThickness) * wtWebThickness);
+					perimeter = 2 * (wtDepth + wtFlangeWidth);
+					break;
+					
+				case "L-SHAPE":
+					const legA = dimensions.legA;
+					const legB = dimensions.legB;
+					const thickness = dimensions.thickness;
+					area = (legA * thickness) + (legB * thickness) - (thickness * thickness);
+					perimeter = 2 * (legA + legB);
+					break;					
+			}
+			return { area, perimeter };
+		}
+		
+		function getShapeDimensionsFromDescription(shapeDesc, shapeType) {
+			let dimensions = {};
+			
+			switch(shapeType) {
+				case "H-SHAPE":
+					const hMatch = shapeDesc.match(/H (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (hMatch) {
+						dimensions = {
+							depth: parseFloat(hMatch[1]),
+							flangeWidth: parseFloat(hMatch[2]),
+							webThickness: parseFloat(hMatch[3]),
+							flangeThickness: parseFloat(hMatch[4])
+						};
+					}
+					break;
+				case "C-SHAPE":
+					const cMatch = shapeDesc.match(/C (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (cMatch) {
+						dimensions = {
+							height: parseFloat(cMatch[1]),
+							flangeWidth: parseFloat(cMatch[2]),
+							webThickness: parseFloat(cMatch[3]),
+							flangeThickness: parseFloat(cMatch[4])
+						};
+					}
+					break;
+				case "CHS":
+					const chsMatch = shapeDesc.match(/CHS (\d+(?:\.\d+)?)MM DIA X (\d+(?:\.\d+)?)MM THK/);
+					if (chsMatch) {
+						dimensions = {
+							diameter: parseFloat(chsMatch[1]),
+							thickness: parseFloat(chsMatch[2])
+						};
+					}
+					break;
+				case "RHS":
+					const rhsMatch = shapeDesc.match(/RHS (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (rhsMatch) {
+						dimensions = {
+							width: parseFloat(rhsMatch[1]),
+							height: parseFloat(rhsMatch[2]),
+							thickness: parseFloat(rhsMatch[3])
+						};
+					}
+					break;
+				case "FLAT_BAR":
+					const fbMatch = shapeDesc.match(/FLAT BAR (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (fbMatch) {
+						dimensions = {
+							width: parseFloat(fbMatch[1]),
+							thickness: parseFloat(fbMatch[2])
+						};
+					}
+					break;
+				case "WT-SHAPE":
+					const wtMatch = shapeDesc.match(/WT (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (wtMatch) {
+						dimensions = {
+							depth: parseFloat(wtMatch[1]),
+							flangeWidth: parseFloat(wtMatch[2]),
+							webThickness: parseFloat(wtMatch[3]),
+							flangeThickness: parseFloat(wtMatch[4])
+						};
+					}
+					break;
+				case "L-SHAPE":
+					const lMatch = shapeDesc.match(/L (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (lMatch) {
+						dimensions = {
+							legA: parseFloat(lMatch[1]),
+							legB: parseFloat(lMatch[2]),
+							thickness: parseFloat(lMatch[3])
+						};
+					}
+					break;					
+			}
+			return dimensions;
+		}		
+		
+        let currentStep = 1;
+        let calculationResults = {};
+
+        function updateProgress() {
+            const progress = (currentStep / 3) * 100;
+            const progressElement = document.getElementById('progressFill');
+            if (progressElement) {
+                progressElement.style.width = `${progress}%`;
+            }
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            document.getElementById(`step${step}`).classList.add('active', 'fade-in');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}Indicator`).classList.add('completed');
+            }
+
+            currentStep = step;
+            updateProgress();
+        }
+
+        function showLoading(stepId) {
+            const loadingElement = document.getElementById(`loading${stepId}`);
+            if (loadingElement) {
+                loadingElement.style.display = 'inline-block';
+            }
+        }
+
+        function hideLoading(stepId) {
+            const loadingElement = document.getElementById(`loading${stepId}`);
+            if (loadingElement) {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = message;
+            
+            const currentStepEl = document.querySelector('.step-content.active');
+            currentStepEl.insertBefore(alertDiv, currentStepEl.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function updateShapeFields(prefix) {
+            const shapeElement = document.getElementById(prefix + "Shape");
+            const fieldsDiv = document.getElementById(prefix + "Fields");
+            
+            if (!shapeElement || !fieldsDiv) {
+                return;
+            }
+            
+            const shape = shapeElement.value;
+
+            if (!shape) {
+                fieldsDiv.innerHTML = "";
+                return;
+            }
+
+            let inputHTML = "";
+
+            switch (shape) {
+                case "H-SHAPE":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Depth">Depth</label>
+                            <input type="number" id="${prefix}Depth" value="150">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}FlangeWidth">Flange Width</label>
+                            <input type="number" id="${prefix}FlangeWidth" value="75">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}WebThickness">Web Thickness</label>
+                            <input type="number" id="${prefix}WebThickness" value="5">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}FlangeThickness">Flange Thickness</label>
+                            <input type="number" id="${prefix}FlangeThickness" value="7">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;
+                case "C-SHAPE":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Height">Depth</label>
+                            <input type="number" id="${prefix}Height" value="200">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}FlangeWidth">Flange Width</label>
+                            <input type="number" id="${prefix}FlangeWidth" value="75">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}WebThickness">Web Thickness</label>
+                            <input type="number" id="${prefix}WebThickness" value="6">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}FlangeThickness">Flange Thickness</label>
+                            <input type="number" id="${prefix}FlangeThickness" value="7.5">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;
+                case "CHS":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Diameter">Diameter</label>
+                            <input type="number" id="${prefix}Diameter" value="100">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}Thickness">Thickness</label>
+                            <input type="number" id="${prefix}Thickness" value="5">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;
+                case "RHS":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Height">Depth</label>
+                            <input type="number" id="${prefix}Height" value="50">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}Width">Width</label>
+                            <input type="number" id="${prefix}Width" value="100">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}Thickness">Thickness</label>
+                            <input type="number" id="${prefix}Thickness" value="4">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;
+				case "WT-SHAPE":
+					inputHTML = `
+						<div class="input-group">
+							<label for="${prefix}Depth">Depth</label>
+							<input type="number" id="${prefix}Depth" value="75">
+							<span class="unit-label">mm</span>
+						</div>
+						<div class="input-group">
+							<label for="${prefix}FlangeWidth">Flange Width</label>
+							<input type="number" id="${prefix}FlangeWidth" value="75">
+							<span class="unit-label">mm</span>
+						</div>
+						<div class="input-group">
+							<label for="${prefix}WebThickness">Web Thickness</label>
+							<input type="number" id="${prefix}WebThickness" value="5">
+							<span class="unit-label">mm</span>
+						</div>
+						<div class="input-group">
+							<label for="${prefix}FlangeThickness">Flange Thickness</label>
+							<input type="number" id="${prefix}FlangeThickness" value="7">
+							<span class="unit-label">mm</span>
+						</div>
+					`;
+					break;
+				case "L-SHAPE":
+					inputHTML = `
+						<div class="input-group">
+							<label for="${prefix}LegA">Leg A</label>
+							<input type="number" id="${prefix}LegA" value="75">
+							<span class="unit-label">mm</span>
+						</div>
+						<div class="input-group">
+							<label for="${prefix}LegB">Leg B</label>
+							<input type="number" id="${prefix}LegB" value="75">
+							<span class="unit-label">mm</span>
+						</div>
+						<div class="input-group">
+							<label for="${prefix}Thickness">Thickness</label>
+							<input type="number" id="${prefix}Thickness" value="6">
+							<span class="unit-label">mm</span>
+						</div>
+					`;
+					break;					
+                case "FLAT_BAR":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Width">Width</label>
+                            <input type="number" id="${prefix}Width" value="50">
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="${prefix}Thickness">Thickness</label>
+                            <input type="number" id="${prefix}Thickness" value="6">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;
+                case "PLATE":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Thickness">Plate Thickness</label>
+                            <input type="number" id="${prefix}Thickness" value="6">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;
+                case "CHECKERED":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Thickness">Plate Thickness</label>
+                            <input type="number" id="${prefix}Thickness" value="6">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;	
+                case "GRATING":
+                    inputHTML = `
+                        <div class="input-group">
+                            <label for="${prefix}Thickness">Plate Thickness</label>
+                            <input type="number" id="${prefix}Thickness" value="6">
+                            <span class="unit-label">mm</span>
+                        </div>
+                    `;
+                    break;						
+            }
+
+            fieldsDiv.innerHTML = inputHTML;
+        }
+
+function getShapeDescription(prefix) {
+    const shapeElement = document.getElementById(prefix + "Shape");
+    if (!shapeElement) return "";
+
+    const val = shapeElement.value;
+    if (!val || val.trim() === "" || val === "-- Select Shape --") return "";
+
+    const shape = val;
+    let desc = "";
+
+    // helper to read numeric input (returns null if missing/invalid)
+    function getNum(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const v = parseFloat(el.value);
+        return Number.isFinite(v) ? v : null;
+    }
+
+    switch (shape) {
+        case "H-SHAPE": {
+            const hD  = getNum(prefix + "Depth");
+            const hFw = getNum(prefix + "FlangeWidth");
+            const hWt = getNum(prefix + "WebThickness");
+            const hFt = getNum(prefix + "FlangeThickness");
+            if ([hD, hFw, hWt, hFt].some(v => v === null)) return "";
+            desc = `H ${hD}MM X ${hFw}MM X ${hWt}MM X ${hFt}MM`;
+            break;
+        }
+        case "C-SHAPE": {
+            const cH  = getNum(prefix + "Height");
+            const cFw = getNum(prefix + "FlangeWidth");
+            const cWt = getNum(prefix + "WebThickness");
+            const cFt = getNum(prefix + "FlangeThickness");
+            if ([cH, cFw, cWt, cFt].some(v => v === null)) return "";
+            desc = `C ${cH}MM X ${cFw}MM X ${cWt}MM X ${cFt}MM`;
+            break;
+        }
+        case "CHS": {
+            const chsD = getNum(prefix + "Diameter");
+            const chsT = getNum(prefix + "Thickness");
+            if ([chsD, chsT].some(v => v === null)) return "";
+            desc = `CHS ${chsD}MM DIA X ${chsT}MM THK`;
+            break;
+        }
+        case "RHS": {
+            const rhsH = getNum(prefix + "Height");
+            const rhsW = getNum(prefix + "Width");
+            const rhsT = getNum(prefix + "Thickness");
+            if ([rhsH, rhsW, rhsT].some(v => v === null)) return "";
+            desc = `RHS ${rhsW}MM X ${rhsH}MM X ${rhsT}MM`;
+            break;
+        }
+        case "FLAT_BAR": {
+            const fbW = getNum(prefix + "Width");
+            const fbT = getNum(prefix + "Thickness");
+            if ([fbW, fbT].some(v => v === null)) return "";
+            desc = `FLAT BAR ${fbW}MM X ${fbT}MM`;
+            break;
+        }
+		case "WT-SHAPE": {
+			const wtD  = getNum(prefix + "Depth");
+			const wtFw = getNum(prefix + "FlangeWidth");
+			const wtWt = getNum(prefix + "WebThickness");
+			const wtFt = getNum(prefix + "FlangeThickness");
+			if ([wtD, wtFw, wtWt, wtFt].some(v => v === null)) return "";
+			desc = `WT ${wtD}MM X ${wtFw}MM X ${wtWt}MM X ${wtFt}MM`;
+			break;
+		}
+		case "L-SHAPE": {
+			const lA = getNum(prefix + "LegA");
+			const lB = getNum(prefix + "LegB");
+			const lT = getNum(prefix + "Thickness");
+			if ([lA, lB, lT].some(v => v === null)) return "";
+			desc = `L ${lA}MM X ${lB}MM X ${lT}MM`;
+			break;
+		}		
+        case "PLATE": {
+            const pT = getNum(prefix + "Thickness");
+            if (pT === null) return "";
+            desc = `PLATE ${pT}MM THICK`;
+            break;
+        }
+        default:
+            return "";
+    }
+
+    return desc;
+}
+
+
+		function addShapeLabel(desc, basicMaterial) {
+			let typeWord = '';     // e.g. BEAM, CHANNEL, ANGLE
+			let shapeLabel = '';   // e.g. H SHAPE, C SHAPE, etc.
+		
+			if (desc.startsWith('CHS')) {
+				typeWord = 'CHS';
+				shapeLabel = '';
+			} else if (desc.startsWith('RHS')) {
+				typeWord = 'RHS';
+				shapeLabel = '';
+			} else if (desc.startsWith('H')) {
+				typeWord = 'BEAM';
+				shapeLabel = 'H SHAPE';
+			} else if (desc.startsWith('C')) {
+				typeWord = 'CHANNEL';
+				shapeLabel = '';
+			} else if (desc.startsWith('WT')) {
+				typeWord = 'WT BEAM';
+				shapeLabel = '';
+			} else if (desc.startsWith('L')) {
+				typeWord = 'ANGLE BAR';
+				shapeLabel = '';
+				const parts = desc.replace(/L\s*/i, '').split('X').map(p => p.trim());
+				const legA = parseFloat(parts[0]); // first number
+				const legB = parseFloat(parts[1]); // second number
+				if (!isNaN(legA) && !isNaN(legB)) {
+					basicMaterial += ` ${legA === legB ? ', EQUAL' : ', UNEQUAL'}`;
+				}
+			}
+
+		
+			// Filter out empty parts and join with commas
+			return [typeWord, basicMaterial, shapeLabel].filter(Boolean).join(', ');
+		}
+
+        function calculateMTO() {
+            showLoading('Step2');
+
+            const tankD = parseFloat(document.getElementById('tankD').value);
+            const tankH = parseFloat(document.getElementById('tankH').value);
+            const basicMaterial = document.getElementById('basicMaterial').value;
+            const materialSpec = document.getElementById('materialSpec').value;
+
+            if (isNaN(tankD) || isNaN(tankH)) {
+                hideLoading('Step2');
+                showError('Please fill in all basic parameters with valid numbers.');
+                return;
+            }
+
+            if (tankD <= 0 || tankH <= 0) {
+                hideLoading('Step2');
+                showError('Tank diameter and height must be greater than zero.');
+                return;
+            }
+
+            if (!basicMaterial || !materialSpec) {
+                hideLoading('Step2');
+                showError('Please fill in material specifications.');
+                return;
+            }
+
+            setTimeout(() => {
+                try {
+                    const results = performCalculations();
+                    calculationResults = results;
+                    displayResults(results);
+                    hideLoading('Step2');
+                    goToStep(3);
+                } catch (error) {
+                    hideLoading('Step2');
+                    showError('Calculation error: ' + error.message);
+                    console.error('Calculation error:', error);
+                }
+            }, 1000);
+        }
+
+		function performCalculations() {
+			const toMM = v => Math.round(v * 1000);
+		
+			function readMM(id, fallback) {
+				const el = document.getElementById(id);
+				if (!el) return fallback;
+				const v = parseFloat(el.value);
+				return Number.isFinite(v) ? v : fallback;
+			}
+		
+		function parseSectionWD(desc) {
+			if (!desc || typeof desc !== 'string') return { w: 0, d: 0 };
+		
+			// Try to capture all numbers in the string
+			const nums = desc.match(/\d+(?:\.\d+)?/g);
+			if (!nums || nums.length === 0) return { w: 0, d: 0 };
+		
+			// RHS typically: "RHS 100MM X 50MM X 5MM"
+			if (desc.startsWith("RHS") && nums.length >= 2) {
+				return { w: parseFloat(nums[0]), d: parseFloat(nums[1]) };
+			}
+		
+			// H-SHAPE typically: "H 200MM X 150MM X 8MM X 12MM"
+			if (desc.startsWith("H")) {
+				return { w: parseFloat(nums[1]) || 0, d: parseFloat(nums[0]) || 0 };
+			}
+		
+			// C-SHAPE: "C 200MM X 75MM X 6MM X 8MM"
+			if (desc.startsWith("C")) {
+				return { w: parseFloat(nums[1]) || 0, d: parseFloat(nums[0]) || 0 };
+			}
+		
+			// CHS or single size sections: use diameter as both
+			if (desc.startsWith("CHS") || desc.startsWith("PIPE")) {
+				const dia = parseFloat(nums[0]);
+				return { w: dia, d: dia };
+			}
+		
+			// Fallback: if just one number, assume square
+			if (nums.length === 1) {
+				const d = parseFloat(nums[0]);
+				return { w: d, d: d };
+			}
+		
+			return { w: parseFloat(nums[0]), d: parseFloat(nums[1]) };
+		}
+
+
+    // inputs
+    const tankD = parseFloat(document.getElementById('tankD').value) / 1000;
+    const tankH = parseFloat(document.getElementById('tankH').value) / 1000;
+    const roofType = document.getElementById('roofType').value;
+    const basicMaterial = document.getElementById('basicMaterial').value;
+    const materialSpec = document.getElementById('materialSpec').value;
+
+    const stepWidth_m = parseFloat(document.getElementById('stepWidth').value) / 1000;
+    const stepLength_m = parseFloat(document.getElementById('stepLength').value) / 1000;
+    const stepOverlap_m = parseFloat(document.getElementById('stepOverlap').value) / 1000;
+    const numStringer = document.getElementById('numStringer').value;
+    const platformInterval_m = parseFloat(document.getElementById('platformInterval').value) / 1000;
+    const platformLength_m = parseFloat(document.getElementById('platformLength').value) / 1000;
+
+    const railHeight_m = parseFloat(document.getElementById('railHeight').value) / 1000;
+    const postSpacing_m = parseFloat(document.getElementById('postSpacing').value) / 1000;
+    const gateOpening_m = parseFloat(document.getElementById('gateOpening').value) / 1000;
+
+    const treadPlateThk = readMM('treadPlateThickness', 0);
+    const platformPlateThk = readMM('platformPlateThickness', 0);
+	const roofPlateThk = readMM('roofThk', 0);
+	const shellPlateThk = readMM('shellThk', 0);
+		
+    const roofRailDesc = getShapeDescription('roofRail');
+    const roofPostDesc = getShapeDescription('roofPost');
+    const platformFrameDesc = getShapeDescription('platformFrame');
+    const platformSupportDesc = getShapeDescription('platformSupport');
+    const stringerDesc = getShapeDescription('stringer');
+
+    const postWD = parseSectionWD(roofPostDesc);
+    const frameWD = parseSectionWD(platformFrameDesc);
+	const suppWD = parseSectionWD(platformSupportDesc);
+
+    // geometry
+    const tankRadius_m = tankD / 2;
+    const stairOutsideRadius_m = tankRadius_m + stepLength_m;
+
+    const stepCountMax = tankH / 0.170;
+    const stepHeight = tankH / Math.round(stepCountMax);
+    const finalStepCount = Math.round(tankH / stepHeight) - 1;
+
+    const stepAngleDeg = ((stepWidth_m - stepOverlap_m) / stairOutsideRadius_m) * (180 / Math.PI);
+    const totalAngleDeg = stepAngleDeg * finalStepCount;
+    const sweepRad = totalAngleDeg * Math.PI / 180;
+
+    const helixLenOuter_m = Math.sqrt(Math.pow(stairOutsideRadius_m * sweepRad, 2) + Math.pow(tankH, 2));
+    const helixLenInner_m = Math.sqrt(Math.pow(tankRadius_m * sweepRad, 2) + Math.pow(tankH, 2));
+    const helixLenMid_m   = Math.sqrt(Math.pow((tankRadius_m + stepLength_m/2) * sweepRad, 2) + Math.pow(tankH, 2));
+	
+	const platformHeights = [];
+	let currentHeight = platformInterval_m;
+	
+		while (currentHeight < tankH) {
+			const remainingHeight = tankH - currentHeight;
+			if (remainingHeight < platformInterval_m) break;
+			platformHeights.push(currentHeight);
+			currentHeight += platformInterval_m;
+		}
+	platformHeights.push(tankH);
+	const numPlatforms = platformHeights.length;
+	
+    let railingLength_m = 0;
+    if (roofType === "Fixed Roof") {
+        railingLength_m = (Math.PI * tankD) - gateOpening_m;
+    } else if (roofType === "Floating Roof") {
+        railingLength_m = (Math.PI * (tankD + stepLength_m + stepLength_m)) - gateOpening_m;
+    }
+
+	const materialDensity = MATERIAL_DENSITIES[basicMaterial] || 7850;
+	let totalWeight = 0;
+	let totalSurfaceArea = 0;
+	
+    const results = {
+        components: [],
+        calculations: {
+			stairRadius: stairOutsideRadius_m,
+			StairRotation: totalAngleDeg,
+            tankDiameter: tankD,
+            tankHeight: tankH,
+            stepsTotal: finalStepCount,
+            revolutions: totalAngleDeg / 360,
+            helixLengthOuter: helixLenOuter_m,
+			helixLengthInner: helixLenInner_m,
+			helixLengthMid: helixLenMid_m,
+            roofPerimeter: Math.PI * tankD,
+            platforms: Math.floor(tankH / platformInterval_m),
+			numPlatforms: numPlatforms
+        },
+		totals: {
+			totalWeight: 0,
+			totalSurfaceArea: 0
+		}
+    };
+
+    // ---- ITEMS ----
+
+		// ---- ROOF HANDRAIL ----
+		if (roofRailDesc && railingLength_m > 0) {
+			const railMaterials = [];
+			const roofRailDimensions = getShapeDimensionsFromDescription(roofRailDesc, document.getElementById('roofRailShape').value);
+			const roofRailProps = calculateShapeProperties(document.getElementById('roofRailShape').value, roofRailDimensions);
+		
+			// Top Rail
+			const topRailWeight = (roofRailProps.area * railingLength_m * 1000 * materialDensity / 1000000000);
+			const topRailSurfaceArea = (roofRailProps.perimeter * railingLength_m * 1000 / 1000000);
+			totalWeight += topRailWeight;
+			totalSurfaceArea += topRailSurfaceArea;
+		
+			railMaterials.push({
+				quantity: 1,
+				description: `TOP - ${roofRailDesc}, ${addShapeLabel(roofRailDesc, basicMaterial)}, ${materialSpec} - ${toMM(railingLength_m)}MM LENGTH`,
+				weight: topRailWeight,
+				surfaceArea: topRailSurfaceArea
+			});
+		
+			// Knee Rail
+			const kneeRailWeight = (roofRailProps.area * railingLength_m * 1000 * materialDensity / 1000000000);
+			const kneeRailSurfaceArea = (roofRailProps.perimeter * railingLength_m * 1000 / 1000000);
+			totalWeight += kneeRailWeight;
+			totalSurfaceArea += kneeRailSurfaceArea;
+		
+			railMaterials.push({
+				quantity: 1,
+				description: `KNEE - ${roofRailDesc}, ${addShapeLabel(roofRailDesc, basicMaterial)}, ${materialSpec} - ${toMM(railingLength_m)}MM LENGTH`,
+				weight: kneeRailWeight,
+				surfaceArea: kneeRailSurfaceArea
+			});
+		
+			results.components.push({
+				name: 'Roof Handrail',
+				materials: railMaterials
+			});
+		}
+		
+		// ---- ROOF HANDRAIL POSTS ----
+		if (roofPostDesc && railingLength_m > 0) {
+			const roofPostQty = Math.ceil(railingLength_m / postSpacing_m);
+			if (roofPostQty > 0) {
+				const roofPostDimensions = getShapeDimensionsFromDescription(roofPostDesc, document.getElementById('roofPostShape').value);
+				const roofPostProps = calculateShapeProperties(document.getElementById('roofPostShape').value, roofPostDimensions);
+				const postWeight = (roofPostProps.area * railHeight_m * 1000 * materialDensity / 1000000000) * roofPostQty;
+				const postSurfaceArea = (roofPostProps.perimeter * railHeight_m * 1000 / 1000000) * roofPostQty;
+				
+				totalWeight += postWeight;
+				totalSurfaceArea += postSurfaceArea;
+		
+				results.components.push({
+					name: 'Roof Handrail Post',
+					materials: [{
+						quantity: roofPostQty,
+						description: `${roofPostDesc}, ${addShapeLabel(roofPostDesc, basicMaterial)}, ${materialSpec} - ${toMM(railHeight_m)}MM LENGTH`,
+						weight: postWeight,
+						surfaceArea: postSurfaceArea
+					}]
+				});
+		
+				// Base plates for posts
+				if (roofPostDesc.includes("CHS") && postWD.d > 0) {
+					const plateSize = Math.round(postWD.d + 100); 
+					const plateVolume = roofPlateThk * plateSize * plateSize;
+					const plateWeight = (plateVolume * materialDensity / 1000000000) * roofPostQty;
+					const plateSurfaceArea = (2 * plateSize * plateSize / 1000000) * roofPostQty;
+					
+					totalWeight += plateWeight;
+					totalSurfaceArea += plateSurfaceArea;
+		
+					results.components.push({
+						name: 'Roof Handrail Base Plate',
+						materials: [{
+							quantity: roofPostQty,
+							description: `${roofPlateThk}MM X ${plateSize}MM X ${plateSize}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+							weight: plateWeight,
+							surfaceArea: plateSurfaceArea
+						}]
+					});
+				} else if (postWD.w > 0 && postWD.d > 0) {
+					const plateVolume = roofPlateThk * (postWD.d + 100) * (postWD.w + 100);
+					const plateWeight = (plateVolume * materialDensity / 1000000000) * roofPostQty;
+					const plateSurfaceArea = (2 * (postWD.d + 100) * (postWD.w + 100) / 1000000) * roofPostQty;
+					
+					totalWeight += plateWeight;
+					totalSurfaceArea += plateSurfaceArea;
+		
+					results.components.push({
+						name: 'Roof Handrail Base Plate',
+						materials: [{
+							quantity: roofPostQty,
+							description: `${roofPlateThk}MM X ${postWD.d + 100}MM X ${postWD.w + 100}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+							weight: plateWeight,
+							surfaceArea: plateSurfaceArea
+						}]
+					});
+				}
+			}
+		}
+		
+		// ---- ROOF HANDRAIL KICK PLATE ----
+		if (roofRailDesc && railingLength_m > 0) {
+			const kickPlateVolume = 6 * 100 * railingLength_m * 1000;
+			const kickPlateWeight = kickPlateVolume * materialDensity / 1000000000;
+			const kickPlateSurfaceArea = (2 * 100 * railingLength_m * 1000 / 1000000);
+			
+			totalWeight += kickPlateWeight;
+			totalSurfaceArea += kickPlateSurfaceArea;
+		
+			results.components.push({
+				name: 'Roof Handrail Kick Plate',
+				materials: [{
+					quantity: 1,
+					description: `6MM X 100MM X ${toMM(railingLength_m)}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+					weight: kickPlateWeight,
+					surfaceArea: kickPlateSurfaceArea
+				}]
+			});
+		}
+		
+		// ---- STAIR PAD PLATE ----
+		if (roofPostDesc && shellPlateThk > 0 && finalStepCount > 0) {
+			const stairPadWidth  = treadPlateThk + 150;
+			const stairPadLength = Math.round(stepWidth_m * 1000) + 150;
+			const stairPadVolume = shellPlateThk * stairPadWidth * stairPadLength;
+			const stairPadWeight = (stairPadVolume * materialDensity / 1000000000) * finalStepCount;
+			const stairPadSurfaceArea = (2 * stairPadWidth * stairPadLength / 1000000) * finalStepCount;
+			
+			totalWeight += stairPadWeight;
+			totalSurfaceArea += stairPadSurfaceArea;
+		
+			results.components.push({
+				name: 'Stair Pad Plate',
+				materials: [{
+					quantity: finalStepCount,
+					description: `${Math.round(shellPlateThk)}MM X ${stairPadWidth}MM X ${stairPadLength}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+					weight: stairPadWeight,
+					surfaceArea: stairPadSurfaceArea
+				}]
+			});
+		}
+		
+		// ---- PLATFORM PAD PLATES ----
+		if (platformFrameDesc) {
+			const platformLength_mm = Math.round(platformLength_m * 1000);
+			const framePadQty   = Math.floor(platformLength_mm / 500) + 1;
+			const supportPadQty = framePadQty;
+			const padPlateMaterials = [];
+		
+			if (framePadQty > 0 && shellPlateThk > 0) {
+				const framePadVolume = shellPlateThk * (frameWD.w + 150) * (frameWD.d + 150);
+				const framePadWeight = (framePadVolume * materialDensity / 1000000000) * framePadQty;
+				const framePadSurfaceArea = (2 * (frameWD.w + 150) * (frameWD.d + 150) / 1000000) * framePadQty;
+				
+				totalWeight += framePadWeight;
+				totalSurfaceArea += framePadSurfaceArea;
+		
+				padPlateMaterials.push({
+					quantity: framePadQty,
+					description: `FRAME PAD PLATE - ${Math.round(shellPlateThk)}MM X ${frameWD.w + 150}MM X ${frameWD.d + 150}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+					weight: framePadWeight,
+					surfaceArea: framePadSurfaceArea
+				});
+			}
+		
+			if (supportPadQty > 0 && shellPlateThk > 0) {
+				const supportPadVolume = shellPlateThk * (suppWD.w + 150) * (suppWD.d + 150);
+				const supportPadWeight = (supportPadVolume * materialDensity / 1000000000) * supportPadQty;
+				const supportPadSurfaceArea = (2 * (suppWD.w + 150) * (suppWD.d + 150) / 1000000) * supportPadQty;
+				
+				totalWeight += supportPadWeight;
+				totalSurfaceArea += supportPadSurfaceArea;
+		
+				padPlateMaterials.push({
+					quantity: supportPadQty,
+					description: `SUPPORT PAD PLATE - ${Math.round(shellPlateThk)}MM X ${suppWD.w + 150}MM X ${suppWD.d + 150}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+					weight: supportPadWeight,
+					surfaceArea: supportPadSurfaceArea
+				});
+			}
+		
+			if (padPlateMaterials.length > 0) {
+				results.components.push({
+					name: 'Platform Pad Plate',
+					materials: padPlateMaterials
+				});
+			}
+		}
+		
+		// ---- STAIR HANDRAIL ----
+		if (roofRailDesc && helixLenOuter_m > 0) {
+			const roofRailDimensions = getShapeDimensionsFromDescription(roofRailDesc, document.getElementById('roofRailShape').value);
+			const roofRailProps = calculateShapeProperties(document.getElementById('roofRailShape').value, roofRailDimensions);
+			const stairRailWeight = (roofRailProps.area * helixLenOuter_m * 1000 * materialDensity / 1000000000);
+			const stairRailSurfaceArea = (roofRailProps.perimeter * helixLenOuter_m * 1000 / 1000000);
+			
+			totalWeight += stairRailWeight;
+			totalSurfaceArea += stairRailSurfaceArea;
+		
+			results.components.push({
+				name: 'Stair Handrail',
+				materials: [{
+					quantity: 1,
+					description: `${roofRailDesc}, ${addShapeLabel(roofRailDesc, basicMaterial)}, ${materialSpec} - ${toMM(results.calculations.helixLengthOuter)}MM LENGTH`,
+					weight: stairRailWeight,
+					surfaceArea: stairRailSurfaceArea
+				}]
+			});
+		}
+		
+		// ---- STAIR HANDRAIL POSTS ----
+		if (roofPostDesc && finalStepCount > 0) {
+			const stairPostQty = finalStepCount + 1;
+			const roofPostDimensions = getShapeDimensionsFromDescription(roofPostDesc, document.getElementById('roofPostShape').value);
+			const roofPostProps = calculateShapeProperties(document.getElementById('roofPostShape').value, roofPostDimensions);
+			const stairPostWeight = (roofPostProps.area * railHeight_m * 1000 * materialDensity / 1000000000) * stairPostQty;
+			const stairPostSurfaceArea = (roofPostProps.perimeter * railHeight_m * 1000 / 1000000) * stairPostQty;
+			
+			totalWeight += stairPostWeight;
+			totalSurfaceArea += stairPostSurfaceArea;
+		
+			results.components.push({
+				name: 'Stair Handrail Post',
+				materials: [{
+					quantity: stairPostQty,
+					description: `${roofPostDesc}, ${addShapeLabel(roofPostDesc, basicMaterial)}, ${materialSpec} - ${toMM(railHeight_m)}MM LENGTH`,
+					weight: stairPostWeight,
+					surfaceArea: stairPostSurfaceArea
+				}]
+			});
+		}
+		
+		// ---- STAIR TREAD PLATE ----
+		if (treadPlateThk > 0 && finalStepCount > 0) {
+			const treadWidth  = Math.round(stepWidth_m * 1000);
+			const treadLength = Math.round(stepLength_m * 1000);
+			const treadPlateShape = (document.getElementById("treadPlateShape")?.value || "").toUpperCase();
+			
+			const treadVolume = treadPlateThk * treadWidth * treadLength;
+			const treadWeight = (treadVolume * materialDensity / 1000000000) * finalStepCount;
+			const treadSurfaceArea = (2 * treadWidth * treadLength / 1000000) * finalStepCount;
+			
+			totalWeight += treadWeight;
+			totalSurfaceArea += treadSurfaceArea;
+			
+			let materialPart = "";
+			if (treadPlateShape === "CHECKERED") {
+				materialPart = `PLATE, ${basicMaterial}, CHECKERED, ${materialSpec}`;
+			} else if (treadPlateShape === "GRATING") {
+				materialPart = `GRATING, ${basicMaterial}, ${materialSpec}`;
+			} else {
+				materialPart = `PLATE, ${basicMaterial}, ${materialSpec}`;
+			}	
+				
+			results.components.push({
+				name: 'Stair Tread Plate',
+				materials: [{
+					quantity: finalStepCount,
+					description: `${treadPlateThk}MM X ${treadWidth}MM X ${treadLength}MM, ${materialPart}`,
+					weight: treadWeight,
+					surfaceArea: treadSurfaceArea
+				}]
+			});
+		}
+		
+		// ---- PLATFORM TOP RAIL ----
+		if (roofRailDesc && platformLength_m > 0 && stepWidth_m > 0) {
+			const platformRailingLen_m = platformLength_m * 2 + stepLength_m * 2;
+			const roofRailDimensions = getShapeDimensionsFromDescription(roofRailDesc, document.getElementById('roofRailShape').value);
+			const roofRailProps = calculateShapeProperties(document.getElementById('roofRailShape').value, roofRailDimensions);
+			const platformRailWeight = (roofRailProps.area * platformRailingLen_m * 1000 * materialDensity / 1000000000);
+			const platformRailSurfaceArea = (roofRailProps.perimeter * platformRailingLen_m * 1000 / 1000000);
+			
+			totalWeight += platformRailWeight;
+			totalSurfaceArea += platformRailSurfaceArea;
+		
+			results.components.push({
+				name: 'Platform Top Rail',
+				materials: [{
+					quantity: 1,
+					description: `${roofRailDesc}, ${addShapeLabel(roofRailDesc, basicMaterial)}, ${materialSpec} - ${toMM(platformRailingLen_m)}MM LENGTH`,
+					weight: platformRailWeight,
+					surfaceArea: platformRailSurfaceArea
+				}]
+			});
+		}
+		
+		// ---- PLATFORM HANDRAIL POSTS ----
+		if (roofPostDesc && platformLength_m > 0) {
+			const platformPostQty = Math.ceil(platformLength_m / postSpacing_m) + 1;
+			if (platformPostQty > 0) {
+				const roofPostDimensions = getShapeDimensionsFromDescription(roofPostDesc, document.getElementById('roofPostShape').value);
+				const roofPostProps = calculateShapeProperties(document.getElementById('roofPostShape').value, roofPostDimensions);
+				const platformPostWeight = (roofPostProps.area * railHeight_m * 1000 * materialDensity / 1000000000) * platformPostQty;
+				const platformPostSurfaceArea = (roofPostProps.perimeter * railHeight_m * 1000 / 1000000) * platformPostQty;
+				
+				totalWeight += platformPostWeight;
+				totalSurfaceArea += platformPostSurfaceArea;
+		
+				results.components.push({
+					name: 'Platform Handrail Post',
+					materials: [{
+						quantity: platformPostQty,
+						description: `${roofPostDesc}, ${addShapeLabel(roofPostDesc, basicMaterial)}, ${materialSpec} - ${toMM(railHeight_m)}MM LENGTH`,
+						weight: platformPostWeight,
+						surfaceArea: platformPostSurfaceArea
+					}]
+				});
+			}
+		}
+		
+		// ---- PLATFORM DECK PLATE ----
+		if (platformPlateThk > 0) {
+			const platformHeights = [];
+			let currentHeight = platformInterval_m;
+		
+			while (currentHeight < tankH) {
+				const remainingHeight = tankH - currentHeight;
+				if (remainingHeight < platformInterval_m) break;
+				platformHeights.push(currentHeight);
+				currentHeight += platformInterval_m;
+			}
+		
+			platformHeights.push(tankH);
+			const numPlatforms = platformHeights.length;	
+			const platformPlateQty = numPlatforms;
+			
+			if (platformPlateQty > 0) {
+				const plateW = Math.round(platformLength_m * 1000);
+				const plateL = Math.round(stepLength_m * 1000);
+				const platformPlateShape = (document.getElementById("platformPlateShape")?.value || "").toUpperCase();
+				
+				const platformVolume = platformPlateThk * plateW * plateL;
+				const platformWeight = (platformVolume * materialDensity / 1000000000) * platformPlateQty;
+				const platformSurfaceArea = (2 * plateW * plateL / 1000000) * platformPlateQty;
+				
+				totalWeight += platformWeight;
+				totalSurfaceArea += platformSurfaceArea;
+				
+				let materialPart = "";
+				if (platformPlateShape === "CHECKERED") {
+					materialPart = `PLATE, ${basicMaterial}, CHECKERED, ${materialSpec}`;
+				} else if (platformPlateShape === "GRATING") {
+					materialPart = `GRATING, ${basicMaterial}, ${materialSpec}`;
+				} else {
+					materialPart = `PLATE, ${basicMaterial}, ${materialSpec}`;
+				}				
+				
+				results.components.push({
+					name: 'Platform Deck Plate',
+					materials: [{
+						quantity: platformPlateQty,
+						description: `${platformPlateThk}MM X ${plateW}MM X ${plateL}MM, ${materialPart}`,
+						weight: platformWeight,
+						surfaceArea: platformSurfaceArea
+					}]
+				});
+			}
+		}
+		
+		// ---- PLATFORM FRAME ----
+		if (platformFrameDesc && platformLength_m > 0 && stepWidth_m > 0 && platformInterval_m > 0 && tankH > 0) {
+			const platformHeights = [];
+			let currentHeight = platformInterval_m;
+		
+			while (currentHeight < tankH) {
+				const remainingHeight = tankH - currentHeight;
+				if (remainingHeight < platformInterval_m) break;
+				platformHeights.push(currentHeight);
+				currentHeight += platformInterval_m;
+			}
+		
+			platformHeights.push(tankH);
+			const numPlatforms = platformHeights.length;
+			const shortQty  = (Math.floor(platformLength_m / 0.5) + 1) * numPlatforms;
+			const longQty = Math.floor(stepLength_m / 0.5) * numPlatforms;
+		
+			const frameMaterials = [];
+			const platformFrameDimensions = getShapeDimensionsFromDescription(platformFrameDesc, document.getElementById('platformFrameShape').value);
+			const platformFrameProps = calculateShapeProperties(document.getElementById('platformFrameShape').value, platformFrameDimensions);
+		
+			if (longQty > 0) {
+				const longFrameWeight = (platformFrameProps.area * platformLength_m * 1000 * materialDensity / 1000000000) * longQty;
+				const longFrameSurfaceArea = (platformFrameProps.perimeter * platformLength_m * 1000 / 1000000) * longQty;
+				
+				totalWeight += longFrameWeight;
+				totalSurfaceArea += longFrameSurfaceArea;
+		
+				frameMaterials.push({
+					quantity: longQty,
+					description: `${platformFrameDesc}, ${addShapeLabel(platformFrameDesc, basicMaterial)}, ${materialSpec} - ${toMM(platformLength_m)}MM LENGTH`,
+					weight: longFrameWeight,
+					surfaceArea: longFrameSurfaceArea
+				});
+			}
+		
+			if (shortQty > 0) {
+				const shortFrameWeight = (platformFrameProps.area * stepLength_m * 1000 * materialDensity / 1000000000) * shortQty;
+				const shortFrameSurfaceArea = (platformFrameProps.perimeter * stepLength_m * 1000 / 1000000) * shortQty;
+				
+				totalWeight += shortFrameWeight;
+				totalSurfaceArea += shortFrameSurfaceArea;
+		
+				frameMaterials.push({
+					quantity: shortQty,
+					description: `${platformFrameDesc}, ${addShapeLabel(platformFrameDesc, basicMaterial)}, ${materialSpec} - ${toMM(stepLength_m)}MM LENGTH`,
+					weight: shortFrameWeight,
+					surfaceArea: shortFrameSurfaceArea
+				});
+			}
+		
+			if (frameMaterials.length > 0) {
+				results.components.push({
+					name: 'Platform Frame',
+					materials: frameMaterials
+				});
+			}
+			
+			// Platform Kick Plates
+			const safeGateOpening_m = (typeof gateOpening_m === "number" && isFinite(gateOpening_m)) ? gateOpening_m : 0;
+			const kickPlateQty = numPlatforms;
+			const kickPlateThickness = 6;
+			const kickPlateWidth_mm = 100;
+			const kickPlateLength_m = (stepLength_m * 2) + (platformLength_m * 2) - (safeGateOpening_m * 2);
+		
+			if (kickPlateQty > 0 && kickPlateLength_m > 0) {
+				const kickPlateVolume = kickPlateThickness * kickPlateWidth_mm * kickPlateLength_m * 1000;
+				const kickPlateWeight = (kickPlateVolume * materialDensity / 1000000000) * kickPlateQty;
+				const kickPlateSurfaceArea = (2 * kickPlateWidth_mm * kickPlateLength_m * 1000 / 1000000) * kickPlateQty;
+				
+				totalWeight += kickPlateWeight;
+				totalSurfaceArea += kickPlateSurfaceArea;
+		
+				results.components.push({
+					name: 'Platform Kick Plate',
+					materials: [{
+						quantity: kickPlateQty,
+						description: `${kickPlateThickness}MM X ${kickPlateWidth_mm}MM X ${toMM(kickPlateLength_m)}MM, PLATE, ${basicMaterial}, ${materialSpec}`,
+						weight: kickPlateWeight,
+						surfaceArea: kickPlateSurfaceArea
+					}]
+				});
+			}		
+		}
+		
+		// ---- PLATFORM SUPPORT ----
+		if (platformSupportDesc && stepWidth_m > 0) {
+			const platformHeights = [];
+			let currentHeight = platformInterval_m;
+		
+			while (currentHeight < tankH) {
+				const remainingHeight = tankH - currentHeight;
+				if (remainingHeight < platformInterval_m) break;
+				platformHeights.push(currentHeight);
+				currentHeight += platformInterval_m;
+			}
+		
+			platformHeights.push(tankH);
+			const numPlatforms = platformHeights.length;		
+			const supportQty = (Math.floor(platformLength_m / 0.5) + 1) * numPlatforms;
+			
+			if (supportQty > 0) {
+				const supportLen_m = stepLength_m * Math.sqrt(2);
+				const platformSupportDimensions = getShapeDimensionsFromDescription(platformSupportDesc, document.getElementById('platformSupportShape').value);
+				const platformSupportProps = calculateShapeProperties(document.getElementById('platformSupportShape').value, platformSupportDimensions);
+				const supportWeight = (platformSupportProps.area * supportLen_m * 1000 * materialDensity / 1000000000) * supportQty;
+				const supportSurfaceArea = (platformSupportProps.perimeter * supportLen_m * 1000 / 1000000) * supportQty;
+				
+				totalWeight += supportWeight;
+				totalSurfaceArea += supportSurfaceArea;
+		
+				results.components.push({
+					name: 'Platform Support',
+					materials: [{
+						quantity: supportQty,
+						description: `${platformSupportDesc}, ${addShapeLabel(platformSupportDesc, basicMaterial)}, ${materialSpec} - ${toMM(supportLen_m)}MM LENGTH`,
+						weight: supportWeight,
+						surfaceArea: supportSurfaceArea
+					}]
+				});
+			}
+		}
+		
+		// ---- STRINGERS ----
+		if (stringerDesc && numStringer !== "0") {
+			const stringerDimensions = getShapeDimensionsFromDescription(stringerDesc, document.getElementById('stringerShape').value);
+			const stringerProps = calculateShapeProperties(document.getElementById('stringerShape').value, stringerDimensions);
+		
+			switch (numStringer) {
+				case "1inner":
+					const innerWeight = (stringerProps.area * helixLenInner_m * 1000 * materialDensity / 1000000000);
+					const innerSurfaceArea = (stringerProps.perimeter * helixLenInner_m * 1000 / 1000000);
+					
+					totalWeight += innerWeight;
+					totalSurfaceArea += innerSurfaceArea;
+		
+					results.components.push({
+						name: 'Inner Stringer',
+						materials: [{
+							quantity: 1,
+							description: `${stringerDesc}, ${addShapeLabel(stringerDesc, basicMaterial)}, ${materialSpec} - ${toMM(helixLenInner_m)}MM LENGTH`,
+							weight: innerWeight,
+							surfaceArea: innerSurfaceArea
+						}]
+					});
+					break;
+				case "1outer":
+					const outerWeight = (stringerProps.area * helixLenOuter_m * 1000 * materialDensity / 1000000000);
+					const outerSurfaceArea = (stringerProps.perimeter * helixLenOuter_m * 1000 / 1000000);
+					
+					totalWeight += outerWeight;
+					totalSurfaceArea += outerSurfaceArea;
+		
+					results.components.push({
+						name: 'Outer Stringer',
+						materials: [{
+							quantity: 1,
+							description: `${stringerDesc}, ${addShapeLabel(stringerDesc, basicMaterial)}, ${materialSpec} - ${toMM(helixLenOuter_m)}MM LENGTH`,
+							weight: outerWeight,
+							surfaceArea: outerSurfaceArea
+						}]
+					});
+					break;
+				case "1middle":
+					const middleWeight = (stringerProps.area * helixLenMid_m * 1000 * materialDensity / 1000000000);
+					const middleSurfaceArea = (stringerProps.perimeter * helixLenMid_m * 1000 / 1000000);
+					
+					totalWeight += middleWeight;
+					totalSurfaceArea += middleSurfaceArea;
+		
+					results.components.push({
+						name: 'Middle Stringer',
+						materials: [{
+							quantity: 1,
+							description: `${stringerDesc}, ${addShapeLabel(stringerDesc, basicMaterial)}, ${materialSpec} - ${toMM(helixLenMid_m)}MM LENGTH`,
+							weight: middleWeight,
+							surfaceArea: middleSurfaceArea
+						}]
+					});
+					break;
+				case "2":
+					const innerWeight2 = (stringerProps.area * helixLenInner_m * 1000 * materialDensity / 1000000000);
+					const innerSurfaceArea2 = (stringerProps.perimeter * helixLenInner_m * 1000 / 1000000);
+					const outerWeight2 = (stringerProps.area * helixLenOuter_m * 1000 * materialDensity / 1000000000);
+					const outerSurfaceArea2 = (stringerProps.perimeter * helixLenOuter_m * 1000 / 1000000);
+					
+					totalWeight += innerWeight2 + outerWeight2;
+					totalSurfaceArea += innerSurfaceArea2 + outerSurfaceArea2;
+		
+					results.components.push({
+						name: 'Inner Stringer',
+						materials: [{
+							quantity: 1,
+							description: `${stringerDesc}, ${addShapeLabel(stringerDesc, basicMaterial)}, ${materialSpec} - ${toMM(helixLenInner_m)}MM LENGTH`,
+							weight: innerWeight2,
+							surfaceArea: innerSurfaceArea2
+						}]
+					});
+					results.components.push({
+						name: 'Outer Stringer',
+						materials: [{
+							quantity: 1,
+							description: `${stringerDesc}, ${addShapeLabel(stringerDesc, basicMaterial)}, ${materialSpec} - ${toMM(helixLenOuter_m)}MM LENGTH`,
+							weight: outerWeight2,
+							surfaceArea: outerSurfaceArea2
+						}]
+					});
+					break;
+			}
+		}
+
+	results.totals.totalWeight = totalWeight;
+	results.totals.totalSurfaceArea = totalSurfaceArea;
+	
+    return results;
+}
+
+        function displayResults(results) {
+            const totalComponents = results.components.length;
+            const totalMaterials = results.components.reduce((sum, comp) => sum + comp.materials.length, 0);
+            const totalQuantity = results.components.reduce((sum, comp) => 
+                sum + comp.materials.reduce((s, m) => s + m.quantity, 0), 0);
+
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalComponents}</div>
+                    <div class="stat-label">Components</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalQuantity}</div>
+                    <div class="stat-label">Total Pieces</div>
+                </div>
+				<div class="stat-card">
+					<div class="stat-value">${results.totals.totalWeight.toFixed(1)}</div>
+					<div class="stat-label">Total Weight (kg)</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${results.totals.totalSurfaceArea.toFixed(1)}</div>
+					<div class="stat-label">Total S. Area (m2)</div>
+				</div>
+            `;
+
+            const calcInfoHTML = `
+                <div class="calculation-info">
+                    <h3>Calculated Configuration</h3>
+                    <div class="calculation-specs">
+                        <div class="spec-item">
+                            <div class="spec-value">${results.calculations.StairRotation.toFixed(2)}deg</div>
+                            <div class="spec-label">Stair Rotation Angle</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-value">${results.calculations.stepsTotal}</div>
+                            <div class="spec-label">Total Steps</div>
+                        </div>
+                        <div class="spec-item">
+                            <div class="spec-value">${results.calculations.numPlatforms}</div>
+                            <div class="spec-label">Number of Platforms</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let resultsHTML = '<div class="results-grid">';
+            
+if (!results.components || results.components.length === 0) {
+    resultsHTML += `
+        <div class="component-result">
+            <div class="component-header">
+                <div class="component-title">No Items Selected</div>
+            </div>
+            <ul class="material-list">
+                <li class="material-item">
+                    <em>Please select at least one material to generate results.</em>
+                </li>
+            </ul>
+        </div>
+    `;
+} else {
+    results.components.forEach(component => {
+        resultsHTML += `
+            <div class="component-result">
+                <div class="component-header">
+                    <div class="component-title">${component.name}</div>
+                    <div class="component-badge">${component.materials.length} item${component.materials.length > 1 ? 's' : ''}</div>
+                </div>
+                <ul class="material-list">
+        `;
+
+        component.materials.forEach(material => {
+            resultsHTML += `
+                <li class="material-item">
+                    <strong>${material.quantity} ${material.quantity > 1 ? 'PCS' : 'PC'}</strong> - ${material.description}
+                </li>
+            `;
+        });
+
+        resultsHTML += `
+                </ul>
+            </div>
+        `;
+    });
+}
+
+resultsHTML += '</div>';
+
+
+            const statsElement = document.getElementById('statsSummary');
+            const calcInfoElement = document.getElementById('calculationInfo');
+            const resultsElement = document.getElementById('results');
+            
+            if (statsElement) statsElement.innerHTML = statsHTML;
+            if (calcInfoElement) calcInfoElement.innerHTML = calcInfoHTML;
+            if (resultsElement) resultsElement.innerHTML = resultsHTML;
+        }
+
+		function exportMTO() {
+			// Get input parameters
+			const tankD = document.getElementById('tankD').value;
+			const tankH = document.getElementById('tankH').value;
+			const roofType = document.getElementById('roofType').value;
+			const basicMaterial = document.getElementById('basicMaterial').value;
+			const materialSpec = document.getElementById('materialSpec').value;
+			
+			// Create Excel-compatible CSV content
+			let csvContent = '';
+			
+			// Header section
+			csvContent += 'TANK TERTIARY MTO REPORT\n';
+			csvContent += `Generated,${new Date().toLocaleDateString()}\n`;
+			csvContent += '================================\n';
+			csvContent += '\n';
+			csvContent += 'PROJECT PARAMETERS:\n';
+			csvContent += `Tank Diameter,${tankD} mm\n`;
+			csvContent += `Tank Height,${tankH} mm\n`;
+			csvContent += `Roof Type,${roofType}\n`;
+			csvContent += `Base Material,${basicMaterial}\n`;
+			csvContent += `Material Spec,${materialSpec}\n`;
+			csvContent += '\n';
+			csvContent += 'SUMMARY:\n';
+			csvContent += `Total Weight,${calculationResults.totals.totalWeight.toFixed(2)} kg\n`;
+			csvContent += `Total Surface Area,${calculationResults.totals.totalSurfaceArea.toFixed(2)} m2\n`;
+			csvContent += '\n';
+			csvContent += 'DETAILED MTO:\n';
+			csvContent += '================================\n';
+			csvContent += '\n';
+			
+			// Table headers for Excel
+			csvContent += 'Component,Quantity,Description,Weight (kg),Surface Area (m2)\n';
+			
+			// Components
+			calculationResults.components.forEach(component => {
+				component.materials.forEach(material => {
+					const escapedDescription = `"${material.description.replace(/"/g, '""')}"`;
+					const weight = material.weight ? material.weight.toFixed(3) : '0.000';
+					const surfaceArea = material.surfaceArea ? material.surfaceArea.toFixed(3) : '0.000';
+					csvContent += `${component.name},${material.quantity},${escapedDescription},${weight},${surfaceArea}\n`;
+				});
+			});
+			
+			// Add totals row
+			csvContent += '\n';
+			csvContent += `TOTALS,,"All Components",${calculationResults.totals.totalWeight.toFixed(2)},${calculationResults.totals.totalSurfaceArea.toFixed(2)}\n`;
+			
+			// Create and download Excel file
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `Tank_Tertiary_MTO_${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+			
+			alert('MTO report exported successfully as Excel file!');
+		}
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('focus', function() {
+                        if (this.parentElement) {
+                            this.parentElement.style.transform = 'translateY(-1px)';
+                        }
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        if (this.parentElement) {
+                            this.parentElement.style.transform = 'translateY(0)';
+                        }
+                    });
+                }
+            });
+        });
+		document.getElementById("numStringer").addEventListener("change", function() {
+			const numStringer = this.value;
+			const stringerSection = document.getElementById("stringerSection");
+			const stringerShapeSelect = document.getElementById("stringerShape");
+			const stringerFields = document.getElementById("stringerFields");
+		
+			if (numStringer === "0") {
+				stringerSection.style.display = "none"; // hide section
+				stringerShapeSelect.value = ""; // clear selection
+				stringerFields.innerHTML = ""; // clear any fields
+			} else {
+				stringerSection.style.display = ""; // show section
+			}
+		});
+		
+		// Run once on page load to apply correct state
+		document.getElementById("numStringer").dispatchEvent(new Event("change"));		
+    </script>
+</body>
+</html>

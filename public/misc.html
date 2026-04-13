@@ -1,0 +1,2464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script defer src="/_vercel/insights/script.js"></script>
+    <title>Tank Misc MTO Estimator</title>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-solid: #667eea;
+            --primary-hover: #5a6fd8;
+            --success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --text-light: #718096;
+            --bg-primary: #f7fafc;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Background animation */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: 15%; animation-delay: 3s; }
+        .shape:nth-child(3) { width: 80px; height: 80px; bottom: 20%; left: 20%; animation-delay: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+		.header-title {
+			font-size: 2rem;
+			font-weight: 700;
+			background: var(--primary);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+			margin-bottom: 0.5rem;
+			display: inline-flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.header-icon {
+			width: 1.8rem;
+			height: 1.8rem;
+			flex-shrink: 0;
+			fill: currentColor;
+			display: block;
+			margin-top: 0.3rem;
+			margin-right: 0.5rem;
+		}
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .wizard-container {
+            min-height: 800px;
+			background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            flex: 1;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 33.33%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--text-light);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #48bb78;
+            border-radius: 12px;
+            background: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--primary-solid);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+        }
+		
+        .input-group input:valid, .input-group select:valid {
+            border-color: #48bb78;
+        }
+
+        .top-angle-section {
+            margin-top: 1rem;
+        }
+		
+        .top-angle-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .top-angle-row .input-group {
+            flex: 1;
+        }
+		
+        .top-angle-fields {
+            display: none;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(247, 250, 252, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .top-angle-fields.show {
+            display: flex;
+        }
+        
+        .top-angle-fields .input-group {
+            flex: 0 0 auto;
+            width: 309px;
+            margin: 0;
+        }
+        
+        .top-angle-fields .input-group input {
+            padding: 0.8rem;
+        }
+
+        .wind-girder-section {
+            margin-top: 1rem;
+        }
+        
+        .wind-girder-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .wind-girder-row .input-group {
+            flex: 1;
+        }
+        
+        .wind-girder-fields {
+            display: none;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(247, 250, 252, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        .wind-girder-fields.show {
+            display: flex;
+        }
+        
+        .wind-girder-fields .input-group {
+            flex: 0 0 auto;
+            width: 309px;
+            margin: 0;
+        }
+        
+        .wind-girder-fields .input-group input {
+            padding: 0.8rem;
+        }
+
+		.readonly-field {
+			font-weight: 600;
+			padding: 1rem;
+			border: 2px solid #e2e8f0;
+			border-radius: 12px;
+            font-size: 1rem;			
+			background: #f9fafb;
+			color: #2d3748;
+		}
+		
+        .unit-label {
+            position: absolute;
+            right: 1rem;
+            top: 2.2rem;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .checkbox-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--primary-solid);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .checkbox-item.selected {
+            border-color: var(--primary-solid);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .checkbox-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .checkbox-header input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .expandable {
+            background: rgba(247, 250, 252, 0.8);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: none;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .expandable.show {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+		.pipe-item {
+			margin-bottom: 1.5rem;
+			padding: 1rem;
+			border: 1px solid #e2e8f0;
+			border-radius: 8px;
+			background: rgba(255, 255, 255, 0.5);
+			position: relative;
+		}
+		
+		.remove-pipe-btn {
+			position: absolute;
+			top: 0.3rem;
+			right: 0.3rem;
+			background: transparent;
+			color: #ef4444;
+			border: none;
+			width: 24px;
+			height: 24px;
+			font-size: 16px;
+			font-weight: bold;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.2s ease;
+		}
+		
+		.remove-pipe-btn:hover {
+			color: #dc2626;
+			transform: scale(1.2);
+		}
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+            border-color: var(--primary-solid);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .results-section {
+            margin-top: 2rem;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .component-result {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .component-result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .component-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .component-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .component-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .material-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .material-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .material-item::before {
+            content: "📋";
+            font-size: 0.9rem;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-solid);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 0.25rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-solid);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .wind-girder-fields {
+                flex-direction: column;
+            }
+            
+            .wind-girder-fields .input-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+			<h1 class="header-title">
+				<img src="icon\misc-bg.svg" alt="Tool icon" class="header-icon">		
+				Tank Misc MTO Estimator
+			</h1>
+            <p class="header-subtitle">Professional tool for calculating miscellaneous tank components and materials</p>
+        </div>
+
+        <div class="wizard-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="step-indicator">
+                <div class="step active" id="step1Indicator">
+                    <span>📝</span>
+                    <span>Basic Parameters</span>
+                </div>
+                <div class="step" id="step2Indicator">
+                    <span>🔧</span>
+                    <span>Component Selection</span>
+                </div>
+                <div class="step" id="step3Indicator">
+                    <span>📋</span>
+                    <span>Material List</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Basic Parameters -->
+            <div class="step-content active" id="step1">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>📜</span>
+                        Tank Specifications
+                    </div>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="tankDiameter">Tank Diameter</label>
+                            <input type="number" id="tankDiameter" placeholder="10000" value="10000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="tankHeight">Tank Height</label>
+                            <input type="number" id="tankHeight" placeholder="12000" value="12000" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="shellThickness">Shell Plate Thickness (First Course)</label>
+                            <input type="number" id="shellThickness" placeholder="6" value="6" required>
+                            <span class="unit-label">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="baseThickness">Base Plate Thickness</label>
+                            <input type="number" id="baseThickness" placeholder="12" value="12" required>
+                            <span class="unit-label">mm</span>
+                        </div>						
+                        <div class="input-group">
+                            <label for="basicMaterial">Tank Base Material</label>
+                            <input type="text" id="basicMaterial" placeholder="CS" value="CS" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="materialSpec">Tank Material Specification</label>
+                            <input type="text" id="materialSpec" placeholder="ASTM A36" value="ASTM A36" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="goToStep(2)">
+                        <span>Next Step</span>
+                        <div class="loading-spinner" id="loadingStep1"></div>
+                    </button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 2: Component Selection -->
+            <div class="step-content" id="step2">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span>🔧</span>
+                        Select Required Components
+                    </div>
+                    
+                    <!-- Nameplate -->
+                    <div class="checkbox-item" id="nameplateItem">
+                        <div class="checkbox-header">
+                            <input type="checkbox" id="chkNameplate" onchange="toggleComponent('nameplate')">
+                            <span>⏹️  Nameplate</span>
+                        </div>
+                        <div id="nameplateFields" class="expandable">
+                            <div class="form-grid">
+								<div class="input-group">
+									<label for="nameplateQuantity">Quantity</label>
+									<input type="number" id="nameplateQuantity" value="1">
+									<span class="unit-label">pcs</span>
+								</div>							
+                                <div class="input-group">
+                                    <label for="nameplateWidth">Width</label>
+                                    <input type="number" id="nameplateWidth" value="210">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="nameplateLength">Length</label>
+                                    <input type="number" id="nameplateLength" value="280">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="nameplateThickness">Thickness</label>
+                                    <input type="number" id="nameplateThickness" value="1.2">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="nameplateMaterial">Material Specification</label>
+                                    <input type="text" id="nameplateMaterial" value="SS304">
+                                    <span class="unit-label">mm</span>
+                                </div>								
+                                <div class="input-group">
+                                    <label for="bracketThickness">Bracket Thickness</label>
+                                    <input type="number" id="bracketThickness" value="6">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+					<!-- Top Angle -->
+					<div class="checkbox-item" id="topAngleItem">
+						<div class="checkbox-header">
+							<input type="checkbox" id="chkTopAngle" onchange="toggleComponent('topAngle')">
+							<span>🔼  Top Angle</span>
+						</div>
+						<div id="topAngleFields" class="expandable">
+							<div class="top-angle-section">
+								<div class="top-angle-row">
+									<div class="input-group">
+										<label for="topAngleType">Section Type</label>
+										<select id="topAngleType" onchange="updateTopAngleFields()">
+											<option value="">-- Select Shape --</option>
+											<option value="H-SHAPE">H-SHAPE</option>
+											<option value="C-SHAPE">C-SHAPE</option>
+											<option value="WT-SHAPE">WT-SHAPE</option>
+											<option value="L-SHAPE">L-SHAPE</option>
+											<option value="CHS">CHS</option>
+											<option value="RHS">RHS</option>
+										</select>
+									</div>
+								</div>
+
+								<!-- L-SHAPE -->
+								<div id="fieldsTopL" class="top-angle-fields">
+									<div class="input-group">
+										<label for="topLLegA">Leg A</label>
+										<input type="number" id="topLLegA" value="100">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topLLegB">Leg B</label>
+										<input type="number" id="topLLegB" value="100">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topLThickness">Thickness</label>
+										<input type="number" id="topLThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- H-SHAPE -->
+								<div id="fieldsTopH" class="top-angle-fields">
+									<div class="input-group">
+										<label for="topHDepth">Depth</label>
+										<input type="number" id="topHDepth" value="300">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topHFlangeWidth">Flange Width</label>
+										<input type="number" id="topHFlangeWidth" value="150">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topHWebThickness">Web Thickness</label>
+										<input type="number" id="topHWebThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topHFlangeThickness">Flange Thickness</label>
+										<input type="number" id="topHFlangeThickness" value="15">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- C-SHAPE -->
+								<div id="fieldsTopC" class="top-angle-fields">
+									<div class="input-group">
+										<label for="topCDepth">Depth</label>
+										<input type="number" id="topCDepth" value="250">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topCFlangeWidth">Flange Width</label>
+										<input type="number" id="topCFlangeWidth" value="90">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topCWebThickness">Web Thickness</label>
+										<input type="number" id="topCWebThickness" value="8">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topCFlangeThickness">Flange Thickness</label>
+										<input type="number" id="topCFlangeThickness" value="12">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- WT-SHAPE -->
+								<div id="fieldsTopWT" class="top-angle-fields">
+									<div class="input-group">
+										<label for="topWTDepth">Depth</label>
+										<input type="number" id="topWTDepth" value="250">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topWTFlangeWidth">Flange Width</label>
+										<input type="number" id="topWTFlangeWidth" value="150">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topWTWebThickness">Web Thickness</label>
+										<input type="number" id="topWTWebThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topWTFlangeThickness">Flange Thickness</label>
+										<input type="number" id="topWTFlangeThickness" value="15">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- CHS -->
+								<div id="fieldsTopCHS" class="top-angle-fields">
+									<div class="input-group">
+										<label for="topCHSDiameter">Diameter</label>
+										<input type="number" id="topCHSDiameter" value="200">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topCHSThickness">Thickness</label>
+										<input type="number" id="topCHSThickness" value="12">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- RHS -->
+								<div id="fieldsTopRHS" class="top-angle-fields">
+									<div class="input-group">
+										<label for="topRHSDepth">Depth</label>
+										<input type="number" id="topRHSDepth" value="200">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topRHSWidth">Width</label>
+										<input type="number" id="topRHSWidth" value="100">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="topRHSThickness">Thickness</label>
+										<input type="number" id="topRHSThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+							
+					<!-- Wind Girder -->
+					<div class="checkbox-item" id="windGirderItem">
+						<div class="checkbox-header">
+							<input type="checkbox" id="chkWindGirder" onchange="toggleComponent('windGirder')">
+							<span>🔄  Wind Girder</span>
+						</div>
+						<div id="windGirderFields" class="expandable">
+							<div class="wind-girder-section">
+								<div class="wind-girder-row">
+									<div class="input-group">
+										<label for="windGirderType">Section Type</label>
+										<select id="windGirderType" onchange="updateWindGirderFields()">
+											<option value="">-- Select Shape --</option>
+											<option value="H-SHAPE">H-SHAPE</option>
+											<option value="C-SHAPE">C-SHAPE</option>
+											<option value="WT-SHAPE">WT-SHAPE</option>
+											<option value="L-SHAPE">L-SHAPE</option>
+											<option value="CHS">CHS</option>
+											<option value="RHS">RHS</option>
+										</select>
+									</div>
+									<div class="input-group">
+										<label for="windGirderQuantity">Quantity</label>
+										<input type="number" id="windGirderQuantity" value="3">
+										<span class="unit-label">pcs</span>
+									</div>
+								</div>
+
+								<!-- L-SHAPE -->
+								<div id="fieldsL" class="wind-girder-fields">
+									<div class="input-group">
+										<label for="lLegA">Leg A</label>
+										<input type="number" id="lLegA" value="100">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="lLegB">Leg B</label>
+										<input type="number" id="lLegB" value="100">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="lThickness">Thickness</label>
+										<input type="number" id="lThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- H-SHAPE -->
+								<div id="fieldsH" class="wind-girder-fields">
+									<div class="input-group">
+										<label for="hDepth">Depth</label>
+										<input type="number" id="hDepth" value="300">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="hFlangeWidth">Flange Width</label>
+										<input type="number" id="hFlangeWidth" value="150">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="hWebThickness">Web Thickness</label>
+										<input type="number" id="hWebThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="hFlangeThickness">Flange Thickness</label>
+										<input type="number" id="hFlangeThickness" value="15">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- C-SHAPE -->
+								<div id="fieldsC" class="wind-girder-fields">
+									<div class="input-group">
+										<label for="cDepth">Depth</label>
+										<input type="number" id="cDepth" value="250">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="cFlangeWidth">Flange Width</label>
+										<input type="number" id="cFlangeWidth" value="90">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="cWebThickness">Web Thickness</label>
+										<input type="number" id="cWebThickness" value="8">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="cFlangeThickness">Flange Thickness</label>
+										<input type="number" id="cFlangeThickness" value="12">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- WT-SHAPE -->
+								<div id="fieldsWT" class="wind-girder-fields">
+									<div class="input-group">
+										<label for="wtDepth">Depth</label>
+										<input type="number" id="wtDepth" value="250">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="wtFlangeWidth">Flange Width</label>
+										<input type="number" id="wtFlangeWidth" value="150">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="wtWebThickness">Web Thickness</label>
+										<input type="number" id="wtWebThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="wtFlangeThickness">Flange Thickness</label>
+										<input type="number" id="wtFlangeThickness" value="15">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- CHS -->
+								<div id="fieldsCHS" class="wind-girder-fields">
+									<div class="input-group">
+										<label for="chsDiameter">Diameter</label>
+										<input type="number" id="chsDiameter" value="200">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="chsThickness">Thickness</label>
+										<input type="number" id="chsThickness" value="12">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+
+								<!-- RHS -->
+								<div id="fieldsRHS" class="wind-girder-fields">
+									<div class="input-group">
+										<label for="rhsDepth">Depth</label>
+										<input type="number" id="rhsDepth" value="200">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="rhsWidth">Width</label>
+										<input type="number" id="rhsWidth" value="100">
+										<span class="unit-label">mm</span>
+									</div>
+									<div class="input-group">
+										<label for="rhsThickness">Thickness</label>
+										<input type="number" id="rhsThickness" value="10">
+										<span class="unit-label">mm</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+                    <!-- Sump Pit -->
+                    <div class="checkbox-item" id="sumpPitItem">
+                        <div class="checkbox-header">
+                            <input type="checkbox" id="chkSumpPit" onchange="toggleComponent('sumpPit')">
+                            <span>⏺️  Sump Pit</span>
+                        </div>
+                        <div id="sumpPitFields" class="expandable">
+                            <div class="form-grid">
+								<div class="input-group">
+                                    <label for="sumpQuantity">Sump Quantity</label>
+                                    <input type="number" id="sumpQuantity" value="1">
+                                    <span class="unit-label">pcs</span>
+                                </div>							
+                                <div class="input-group">
+                                    <label for="sumpDiameter">Diameter</label>
+                                    <input type="number" id="sumpDiameter" value="500">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="sumpDepth">Depth</label>
+                                    <input type="number" id="sumpDepth" value="600">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="sumpThickness">Plate Thickness</label>
+                                    <input type="number" id="sumpThickness" value="8">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anchor Chair -->
+                    <div class="checkbox-item" id="anchorChairItem">
+                        <div class="checkbox-header">
+                            <input type="checkbox" id="chkAnchorChair" onchange="toggleComponent('anchorChair')">
+                            <span>⏬  Anchor Chair</span>
+                        </div>
+                        <div id="anchorChairFields" class="expandable">
+                            <div class="form-grid">
+
+								<div class="input-group">
+									<label>Tank Classification</label>
+									<div id="tankClassLabel" class="readonly-field">-- calculated --</div>
+								</div>
+								<div class="input-group">
+                                    <label for="chairQuantity">Quantity</label>
+                                    <input type="number" id="chairQuantity" value="12">
+                                    <span class="unit-label">pcs</span>
+                                </div>
+								<div class="input-group">
+                                    <label for="chairWebThickness">Web Thickness</label>
+                                    <input type="number" id="chairWebThickness" value="14">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="chairWebHeight">Web Height</label>
+                                    <input type="number" id="chairWebHeight" value="100">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="chairWebDepth">Web Depth</label>
+                                    <input type="number" id="chairWebDepth" value="100">
+                                    <span class="unit-label">mm</span>
+                                </div>								
+                                <div class="input-group">
+                                    <label for="chairTopThick">Top Plate Thickness</label>
+                                    <input type="number" id="chairTopThick" value="16">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="chairTopWidth">Top Plate Width</label>
+                                    <input type="number" id="chairTopWidth" value="250">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="boltSize">Anchor Bolt Size</label>
+                                    <input type="text" id="boltSize" value="M20">
+                                    <span class="unit-label">ISO Bolt</span>
+                                </div>								
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lifting Lug -->
+                    <div class="checkbox-item" id="liftingLugItem">
+                        <div class="checkbox-header">
+                            <input type="checkbox" id="chkLiftingLug" onchange="toggleComponent('liftingLug')">
+                            <span>⬆️  Lifting Lug</span>
+                        </div>
+                        <div id="liftingLugFields" class="expandable">
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <label for="lugQuantity">Quantity</label>
+                                    <input type="number" id="lugQuantity" value="4">
+                                    <span class="unit-label">pcs</span>
+                                </div>							
+                                <div class="input-group">
+                                    <label for="lugPlateThickness">Lug Plate Thickness</label>
+                                    <input type="number" id="lugPlateThickness" value="20">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="lugPlateWidth">Lug Plate Width</label>
+                                    <input type="number" id="lugPlateWidth" value="150">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="lugPlateHeight">Lug Plate Height</label>
+                                    <input type="number" id="lugPlateHeight" value="200">
+                                    <span class="unit-label">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <label for="padPlateThick">Pad Plate Thickness</label>
+                                    <input type="number" id="padPlateThick" value="18">
+                                    <span class="unit-label">mm</span>
+                                </div>								
+                            </div>
+                        </div>
+                    </div>
+
+					<!-- Additional Pipe -->
+					<div class="checkbox-item" id="additionalPipeItem">
+						<div class="checkbox-header">
+							<input type="checkbox" id="chkAdditionalPipe" onchange="toggleComponent('additionalPipe')">
+							<span>📶  Additional Pipe</span>
+						</div>
+						<div id="additionalPipeFields" class="expandable">
+							<div id="pipeItemsContainer">
+								<div class="pipe-item" data-index="0">
+									<div class="form-grid">
+										<div class="input-group">
+											<label for="pipeSize_0">Pipe Size</label>
+											<select id="pipeSize_0">
+												<option value="15">1/2" (15mm) </option>
+												<option value="20">3/4" (20mm) </option>
+												<option value="25">1" (25mm) </option>
+												<option value="32">1-1/4" (32mm) </option>
+												<option value="40">1-1/2" (40mm) </option>
+												<option value="50">2" (50mm) </option>
+												<option value="65">2-1/2" (65mm) </option>
+												<option value="80">3" (80mm) </option>
+												<option value="90">3-1/2" (90mm) </option>
+												<option value="100">4" (100mm) </option>
+												<option value="130">5" (130mm) </option>
+												<option value="150">6" (150mm) </option>
+												<option value="200">8" (200mm) </option>
+												<option value="250">10" (250mm) </option>
+												<option value="300">12" (300mm) </option>
+												<option value="350">14" (350mm) </option>
+												<option value="400">16" (400mm) </option>
+												<option value="450">18" (450mm) </option>
+												<option value="500">20" (500mm) </option>
+												<option value="550">22" (550mm) </option>
+												<option value="600">24" (600mm) </option>
+												<option value="650">26" (650mm) </option>
+												<option value="700">28" (700mm) </option>
+												<option value="750">30" (750mm) </option>
+												<option value="800">32" (800mm) </option>
+												<option value="850">34" (850mm) </option>
+												<option value="900">36" (900mm) </option>												
+											</select>
+										</div>
+										<div class="input-group">
+											<label for="pipeThickness_0">Pipe Thickness</label>
+											<input type="number" id="pipeThickness_0" value="6">
+											<span class="unit-label">mm</span>
+										</div>
+										<div class="input-group">
+											<label for="pipeLength_0">Pipe Length</label>
+											<input type="number" id="pipeLength_0" value="150">
+											<span class="unit-label">mm</span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="action-buttons" style="margin-top: 1rem;">
+								<button type="button" class="btn btn-secondary" onclick="addPipeItem()">+ Add Item</button>
+							</div>
+						</div>
+					</div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+                    <button class="btn btn-primary" onclick="calculateMTO()">
+                        <span>Calculate MTO</span>
+                        <div class="loading-spinner" id="loadingStep2"></div>
+                    </button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+
+            <!-- Step 3: Results -->
+            <div class="step-content" id="step3">
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="results-section" id="results"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
+                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+		// Material density constants (kg/m³)
+		const MATERIAL_DENSITIES = {
+			'CS': 7850,  // Carbon Steel
+			'SS': 8000,  // Stainless Steel  
+			'AL': 2700   // Aluminum
+		};	
+
+		// Pipe Outside Diameter mapping (mm)
+		const PIPE_OD_MAPPING = {
+			15: 21.34,    // 1/2"
+			20: 26.67,    // 3/4" 
+			25: 33.4,    // 1"
+			32: 42.16,    // 1-1/4"
+			40: 48.26,    // 1-1/2"
+			50: 60.33,    // 2"
+			65: 73.03,    // 2-1/2"
+			80: 88.9,    // 3"
+			90: 101.6,   // 3-1/2"
+			100: 114.3,  // 4"
+			130: 141.3,  // 5"
+			150: 168.28,  // 6"
+			200: 219.08,  // 8"
+			250: 273.05,  // 10"
+			300: 323.85,  // 12"
+			350: 355.6,  // 14"
+			400: 406.4,  // 16"
+			450: 457.2,  // 18"
+			500: 508.0,  // 20"
+			550: 558.8,  // 22"
+			600: 609.6,  // 24"
+			650: 660.4,  // 26"
+			700: 711.2,  // 28"
+			750: 762.0,  // 30"
+			800: 812.8,  // 32"
+			850: 863.6,  // 34"
+			900: 914.4   // 36"
+		};		
+		
+		
+		// Shape calculation functions
+		function calculateShapeProperties(type, dimensions) {
+			let area = 0; // mm²
+			let perimeter = 0; // mm
+			
+			switch(type) {
+				case "H-SHAPE":
+					const hDepth = dimensions.depth;
+					const hFlangeWidth = dimensions.flangeWidth;
+					const hWebThickness = dimensions.webThickness;
+					const hFlangeThickness = dimensions.flangeThickness;
+					area = (2 * hFlangeWidth * hFlangeThickness) + ((hDepth - 2 * hFlangeThickness) * hWebThickness);
+					perimeter = (4 * hFlangeWidth) + (2 * hDepth) - (2 * hWebThickness);
+					break;
+					
+				case "C-SHAPE":
+					const cDepth = dimensions.depth;
+					const cFlangeWidth = dimensions.flangeWidth;
+					const cWebThickness = dimensions.webThickness;
+					const cFlangeThickness = dimensions.flangeThickness;
+					area = (2 * cFlangeWidth * cFlangeThickness) + ((cDepth - 2 * cFlangeThickness) * cWebThickness);
+					perimeter = (4 * cFlangeWidth) + (2 * cDepth) - (2 * cWebThickness);
+					break;
+					
+				case "WT-SHAPE":
+					const wtDepth = dimensions.depth;
+					const wtFlangeWidth = dimensions.flangeWidth;
+					const wtWebThickness = dimensions.webThickness;
+					const wtFlangeThickness = dimensions.flangeThickness;
+					area = (wtFlangeWidth * wtFlangeThickness) + ((wtDepth - wtFlangeThickness) * wtWebThickness);
+					perimeter = 2 * (wtDepth + wtFlangeWidth);
+					break;
+					
+				case "L-SHAPE":
+					const legA = dimensions.legA;
+					const legB = dimensions.legB;
+					const thickness = dimensions.thickness;
+					area = (legA * thickness) + (legB * thickness) - (thickness * thickness);
+					perimeter = 2 * (legA + legB);
+					break;
+					
+				case "CHS":
+					const chsDiameter = dimensions.diameter;
+					const chsThickness = dimensions.thickness;
+					const outerRadius = chsDiameter / 2;
+					const innerRadius = outerRadius - chsThickness;
+					area = Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+					perimeter = Math.PI * chsDiameter;
+					break;
+					
+				case "RHS":
+					const rhsDepth = dimensions.depth;
+					const rhsWidth = dimensions.width;
+					const rhsThickness = dimensions.thickness;
+					const outerArea = rhsDepth * rhsWidth;
+					const innerArea = (rhsDepth - 2 * rhsThickness) * (rhsWidth - 2 * rhsThickness);
+					area = outerArea - innerArea;
+					perimeter = 2 * (rhsDepth + rhsWidth);
+					break;
+			}
+			return { area, perimeter };
+		}
+
+		function getShapeDimensionsFromDescription(shapeDesc, shapeType) {
+			let dimensions = {};
+			
+			switch(shapeType) {
+				case "H-SHAPE":
+					const hMatch = shapeDesc.match(/H (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (hMatch) {
+						dimensions = {
+							depth: parseFloat(hMatch[1]),
+							flangeWidth: parseFloat(hMatch[2]),
+							webThickness: parseFloat(hMatch[3]),
+							flangeThickness: parseFloat(hMatch[4])
+						};
+					}
+					break;
+				case "C-SHAPE":
+					const cMatch = shapeDesc.match(/C (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (cMatch) {
+						dimensions = {
+							depth: parseFloat(cMatch[1]),
+							flangeWidth: parseFloat(cMatch[2]),
+							webThickness: parseFloat(cMatch[3]),
+							flangeThickness: parseFloat(cMatch[4])
+						};
+					}
+					break;
+				case "WT-SHAPE":
+					const wtMatch = shapeDesc.match(/WT (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (wtMatch) {
+						dimensions = {
+							depth: parseFloat(wtMatch[1]),
+							flangeWidth: parseFloat(wtMatch[2]),
+							webThickness: parseFloat(wtMatch[3]),
+							flangeThickness: parseFloat(wtMatch[4])
+						};
+					}
+					break;
+				case "L-SHAPE":
+					const lMatch = shapeDesc.match(/L (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (lMatch) {
+						dimensions = {
+							legA: parseFloat(lMatch[1]),
+							legB: parseFloat(lMatch[2]),
+							thickness: parseFloat(lMatch[3])
+						};
+					}
+					break;
+				case "CHS":
+					const chsMatch = shapeDesc.match(/CHS (\d+(?:\.\d+)?)MM DIA X (\d+(?:\.\d+)?)MM THK/);
+					if (chsMatch) {
+						dimensions = {
+							diameter: parseFloat(chsMatch[1]),
+							thickness: parseFloat(chsMatch[2])
+						};
+					}
+					break;
+				case "RHS":
+					const rhsMatch = shapeDesc.match(/RHS (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM X (\d+(?:\.\d+)?)MM/);
+					if (rhsMatch) {
+						dimensions = {
+							width: parseFloat(rhsMatch[1]),
+							depth: parseFloat(rhsMatch[2]),
+							thickness: parseFloat(rhsMatch[3])
+						};
+					}
+					break;
+			}
+			return dimensions;
+		}	
+		
+        let currentStep = 1;
+        let calculationResults = {};
+
+        function updateProgress() {
+            const progress = (currentStep / 3) * 100;
+            const progressElement = document.getElementById('progressFill');
+            if (progressElement) {
+                progressElement.style.width = `${progress}%`;
+            }
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Hide all step indicators
+            document.querySelectorAll('.step').forEach(el => {
+                el.classList.remove('active', 'completed');
+            });
+
+            // Show target step
+            document.getElementById(`step${step}`).classList.add('active', 'fade-in');
+            document.getElementById(`step${step}Indicator`).classList.add('active');
+
+            // Mark previous steps as completed
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}Indicator`).classList.add('completed');
+            }
+
+            currentStep = step;
+            updateProgress();
+        }
+
+        function toggleComponent(componentName) {
+            const checkbox = document.getElementById(`chk${componentName.charAt(0).toUpperCase() + componentName.slice(1)}`);
+            const fields = document.getElementById(`${componentName}Fields`);
+            const item = document.getElementById(`${componentName}Item`);
+            
+            if (checkbox && fields && item) {
+                if (checkbox.checked) {
+                    fields.classList.add('show');
+                    item.classList.add('selected');
+                } else {
+                    fields.classList.remove('show');
+                    item.classList.remove('selected');
+                }
+            }
+        }
+
+        function showLoading(stepId) {
+            const loadingElement = document.getElementById(`loading${stepId}`);
+            if (loadingElement) {
+                loadingElement.style.display = 'inline-block';
+            }
+        }
+
+        function hideLoading(stepId) {
+            const loadingElement = document.getElementById(`loading${stepId}`);
+            if (loadingElement) {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = message;
+            
+            const currentStepEl = document.querySelector('.step-content.active');
+            currentStepEl.insertBefore(alertDiv, currentStepEl.firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+		function updateTopAngleFields() {
+			const type = document.getElementById("topAngleType").value;
+			document.querySelectorAll(".top-angle-fields").forEach(el => el.classList.remove('show'));
+		
+			if (type === "L-SHAPE") document.getElementById("fieldsTopL").classList.add('show');
+			else if (type === "H-SHAPE") document.getElementById("fieldsTopH").classList.add('show');
+			else if (type === "C-SHAPE") document.getElementById("fieldsTopC").classList.add('show');
+			else if (type === "WT-SHAPE") document.getElementById("fieldsTopWT").classList.add('show');
+			else if (type === "CHS") document.getElementById("fieldsTopCHS").classList.add('show');
+			else if (type === "RHS") document.getElementById("fieldsTopRHS").classList.add('show');
+		}
+		
+		
+        function updateWindGirderFields() {
+            const type = document.getElementById("windGirderType").value;
+            document.querySelectorAll(".wind-girder-fields").forEach(el => el.classList.remove('show'));
+            
+            if (type === "L-SHAPE") document.getElementById("fieldsL").classList.add('show');
+            else if (type === "H-SHAPE") document.getElementById("fieldsH").classList.add('show');
+            else if (type === "C-SHAPE") document.getElementById("fieldsC").classList.add('show');
+            else if (type === "WT-SHAPE") document.getElementById("fieldsWT").classList.add('show');
+            else if (type === "CHS") document.getElementById("fieldsCHS").classList.add('show');
+            else if (type === "RHS") document.getElementById("fieldsRHS").classList.add('show');
+        }
+ 
+		/* === override tracker === */
+		let userOverrode = {}; // keys: input ids the user has edited
+		
+		/* mark a field as edited by user */
+		function markOverrode(id) {
+		userOverrode[id] = true;
+		}
+		
+		/* reset overrides (optional helper) */
+		function resetOverrides() {
+		userOverrode = {};
+		updateTankClassFields();
+		}
+		
+		/* main auto-classify + default-fill function */
+		function updateTankClassFields() {
+		const D = parseFloat(document.getElementById('tankDiameter')?.value) || 0;
+		const H = parseFloat(document.getElementById('tankHeight')?.value) || 0;
+		const V = Math.PI * (D/2000)**2 * (H/1000);          // volume in m³
+		const circumference = Math.PI * (D/1000);           // meters
+		
+		let cls = 'Small';
+		if (V >= 5000) cls = 'Large';
+		else if (V >= 500) cls = 'Medium';
+		
+		const defaultsByClass = {
+			Small:  { spacing:2.5, chairWebThickness:8, chairWebHeight:250,  chairWebDepth:120,  chairTopThick:12, chairTopWidth:120, boltSize:'M20' },
+			Medium: { spacing:2.0, chairWebThickness:10, chairWebHeight:300, chairWebDepth:150, chairTopThick:14, chairTopWidth:150, boltSize:'M24' },
+			Large:  { spacing:1.75,chairWebThickness:12, chairWebHeight:400, chairWebDepth:200, chairTopThick:18, chairTopWidth:200, boltSize:'M30' }
+		};
+		
+		const defaults = defaultsByClass[cls];
+		
+		// recommended quantity based on spacing
+		let n = 0;
+		if (defaults && defaults.spacing && circumference > 0) {
+			n = Math.round(circumference / defaults.spacing);
+			n = Math.max(6, n);
+			if (n % 2 !== 0) n += 1;
+			n = Math.round(n / 4) * 4;
+		} else {
+			n = parseInt(document.getElementById('chairQuantity')?.value) || 6;
+			n = Math.round(n / 4) * 4;
+		}
+		
+		// helper to set value only if user hasn't overridden it
+		function setIfNotOverrode(id, value) {
+			const el = document.getElementById(id);
+			if (!el) return;
+			if (!userOverrode[id]) el.value = value;
+		}
+		
+		// assign defaults (respecting user overrides)
+		setIfNotOverrode('chairQuantity', n);
+		setIfNotOverrode('chairWebThickness', defaults.chairWebThickness);
+		setIfNotOverrode('chairWebHeight', defaults.chairWebHeight);
+		setIfNotOverrode('chairWebDepth', defaults.chairWebDepth);
+		setIfNotOverrode('chairTopThick', defaults.chairTopThick);   // matches your input id
+		setIfNotOverrode('chairTopWidth', defaults.chairTopWidth);   // matches your input id
+		setIfNotOverrode('boltSize', defaults.boltSize);
+		
+		// update read-only classification label (create element with id="tankClassLabel")
+		const labelEl = document.getElementById('tankClassLabel');
+		if (labelEl) labelEl.innerText = `${cls} (Tank Volume = ${V.toFixed(1)} m³)`;
+		}
+		
+		/* === wire up event listeners once DOM is ready === */
+		document.addEventListener('DOMContentLoaded', function () {
+		// fields we want to mark as user-editable (so we don't clobber them)
+		const fieldIds = [
+			'chairQuantity','chairWebThickness','chairWebHeight','chairWebDepth',
+			'chairTopThick','chairTopWidth','boltSize'
+		];
+		
+		// attach input listeners so that any manual change is remembered
+		fieldIds.forEach(id => {
+			const el = document.getElementById(id);
+			if (!el) return;
+			el.addEventListener('input', () => markOverrode(id));
+		});
+		
+		// re-run auto-classify when tank diameter/height change
+		const diam = document.getElementById('tankDiameter');
+		const height = document.getElementById('tankHeight');
+		if (diam) diam.addEventListener('input', updateTankClassFields);
+		if (height) height.addEventListener('input', updateTankClassFields);
+		
+		// initial run to populate defaults on page load
+		updateTankClassFields();
+		});
+ 
+        function calculateMTO() {
+            showLoading('Step2');
+
+            // Validate basic parameters
+            const tankDiameter = parseFloat(document.getElementById('tankDiameter').value);
+            const tankHeight = parseFloat(document.getElementById('tankHeight').value);
+            const shellThickness = parseFloat(document.getElementById('shellThickness').value);
+            const basicMaterial = document.getElementById('basicMaterial').value;
+            const materialSpec = document.getElementById('materialSpec').value;
+
+            if (isNaN(tankDiameter) || isNaN(tankHeight) || isNaN(shellThickness)) {
+                hideLoading('Step2');
+                showError('Please fill in all basic parameters with valid numbers.');
+                return;
+            }
+
+            if (tankDiameter <= 0 || tankHeight <= 0 || shellThickness <= 0) {
+                hideLoading('Step2');
+                showError('All values must be greater than zero.');
+                return;
+            }
+
+            if (!basicMaterial || !materialSpec) {
+                hideLoading('Step2');
+                showError('Please fill in material specifications.');
+                return;
+            }
+
+            // Check if at least one component is selected
+            const hasSelectedComponent = ['Nameplate', 'TopAngle', 'WindGirder', 'SumpPit', 'AnchorChair', 'LiftingLug', 'AdditionalPipe']
+                .some(comp => document.getElementById('chk' + comp).checked);
+
+            if (!hasSelectedComponent) {
+                hideLoading('Step2');
+                showError('Please select at least one component.');
+                return;
+            }
+
+            // Simulate calculation delay
+            setTimeout(() => {
+                try {
+                    const results = performCalculations(tankDiameter, tankHeight, shellThickness, basicMaterial, materialSpec);
+                    calculationResults = results;
+                    displayResults(results);
+                    hideLoading('Step2');
+                    goToStep(3);
+                } catch (error) {
+                    hideLoading('Step2');
+                    showError('Calculation error: ' + error.message);
+                    console.error('Calculation error:', error);
+                }
+            }, 1000);
+        }
+
+        function performCalculations(tankDiameter, tankHeight, shellThickness, basicMaterial, materialSpec) {
+            const tankRadius = tankDiameter / 2;
+            const tankCircumference = Math.PI * tankDiameter;
+
+			const materialDensity = MATERIAL_DENSITIES[basicMaterial] || 7850;
+			let totalWeight = 0;
+			let totalSurfaceArea = 0;    
+			
+            const results = {
+                components: [],
+                tankSpecs: {
+                    diameter: tankDiameter,
+                    height: tankHeight,
+                    circumference: tankCircumference,
+                    shellThickness: shellThickness
+                }
+            };
+
+            // Nameplate
+            if (document.getElementById('chkNameplate').checked) {
+				const quantity = parseFloat(document.getElementById('nameplateQuantity').value);
+                const width = parseFloat(document.getElementById('nameplateWidth').value);
+                const length = parseFloat(document.getElementById('nameplateLength').value);
+                const thickness = parseFloat(document.getElementById('nameplateThickness').value);
+                const nameplateMat = document.getElementById('nameplateMaterial').value;
+                
+                const bracketThickness = parseFloat(document.getElementById('bracketThickness').value);
+                const bracketWidth = parseFloat(document.getElementById('nameplateWidth').value) + 20;
+                const bracketLength = parseFloat(document.getElementById('nameplateLength').value) + 20;
+                
+                const bracketsuppThickness = bracketThickness;
+                const bracketsuppWidth = 75 - bracketThickness;
+                const bracketsuppLength = bracketWidth - 12;
+ 
+				// -- Calculate Weight and Surface Area --
+				
+				const nameplateVolume = thickness * width * length;
+				const nameplateWeight = quantity * (nameplateVolume * MATERIAL_DENSITIES['SS'] || 8000) / 1e9;
+				const nameplateSurfaceArea = quantity * (2 * width * length) / 1e6;
+				
+				const bracketVolume = bracketThickness * bracketWidth * bracketLength;
+				const bracketWeight = quantity * (bracketVolume * materialDensity) / 1e9;
+				const bracketSurfaceArea = quantity * (2 * bracketWidth * bracketLength) / 1e6;
+				
+				const suppVolume = bracketsuppThickness * bracketsuppWidth * bracketsuppLength;
+				const suppWeight = quantity * (suppVolume * materialDensity) / 1e9;
+				const suppSurfaceArea = quantity * (2 * bracketsuppWidth * bracketsuppLength) / 1e6;
+				
+				totalWeight += nameplateWeight + bracketWeight + suppWeight;
+				totalSurfaceArea += nameplateSurfaceArea + bracketSurfaceArea + suppSurfaceArea;				
+ 
+                //  -- Push the Result --
+				results.components.push({
+                    name: 'Nameplate',
+                    icon: '⏹️',
+                    materials: [
+                        {
+                            quantity: quantity,
+                            description: `${thickness}MM X ${width}MM X ${length}MM, NAME PLATE, SS, ENGRAVED, ${nameplateMat}`,
+							weight: nameplateWeight,
+							surfaceArea: nameplateSurfaceArea
+                        },
+                        {
+                            quantity: quantity,
+                            description: `${bracketThickness}MM X ${bracketWidth}MM X ${bracketLength}MM, PLATE, ${basicMaterial}, ${materialSpec} (BRACKET)`,
+							weight: bracketWeight,
+							surfaceArea: bracketSurfaceArea							
+                        },
+                        {
+                            quantity: quantity,
+                            description: `${bracketsuppThickness}MM X ${bracketsuppWidth}MM X ${bracketsuppLength}MM, PLATE, ${basicMaterial}, ${materialSpec} (BRACKET LEG)`,
+							weight: suppWeight,
+							surfaceArea: suppSurfaceArea							
+                        },
+                        {
+                            quantity: quantity * 4,
+                            description: `1/4" DIA X 16MM L, SCREW, SS, ROUND HEAD, C/W HEX NUT, SS304`,
+							weight: 0.002, // Estimate for small hardware
+							surfaceArea: 0.001							
+						}						
+                    ]
+                });
+            }
+
+			// Top Angle
+			if (document.getElementById('chkTopAngle').checked) {
+				const type = document.getElementById('topAngleType').value;
+				const quantity = 1;
+				const length = Math.round(tankCircumference);
+				let sizeDesc = '';
+				let weight = 0;
+				let surfaceArea = 0;				
+			
+				if (type === 'L-SHAPE') {
+					const legA = parseFloat(document.getElementById('topLLegA').value);
+					const legB = parseFloat(document.getElementById('topLLegB').value);
+					const thickness = parseFloat(document.getElementById('topLThickness').value);
+					const equality = legA === legB ? 'EQUAL' : 'UNEQUAL';
+					
+					const dimensions = { legA, legB, thickness };
+					const props = calculateShapeProperties('L-SHAPE', dimensions);
+					weight = (props.area * length * materialDensity) / 1e9;
+					surfaceArea = (props.perimeter * length) / 1e6;		
+					
+                    sizeDesc = `L ${legA}MM X ${legB}MM X ${thickness}MM, ANGLE BAR, ${basicMaterial}, ${equality}, ${materialSpec}`;
+				}
+				else if (type === 'H-SHAPE') {
+					const depth = parseFloat(document.getElementById('topHDepth').value);
+					const flange = parseFloat(document.getElementById('topHFlangeWidth').value);
+					const webThk = parseFloat(document.getElementById('topHWebThickness').value);
+					const flangeThk = parseFloat(document.getElementById('topHFlangeThickness').value);
+					
+					const dimensions = { depth, flangeWidth: flange, webThickness: webThk, flangeThickness: flangeThk };
+					const props = calculateShapeProperties('H-SHAPE', dimensions);
+					weight = (props.area * length * materialDensity) / 1e9;
+					surfaceArea = (props.perimeter * length) / 1e6;		
+					
+                    sizeDesc = `H ${depth}MM X ${flange}MM X ${webThk}MM X ${flangeThk}MM, BEAM, ${basicMaterial}, H SHAPE, ${materialSpec}`;
+				}
+				else if (type === 'C-SHAPE') {
+					const depth = parseFloat(document.getElementById('topCDepth').value);
+					const flange = parseFloat(document.getElementById('topCFlangeWidth').value);
+					const webThk = parseFloat(document.getElementById('topCWebThickness').value);
+					const flangeThk = parseFloat(document.getElementById('topCFlangeThickness').value);
+					
+					const dimensions = { depth, flangeWidth: flange, webThickness: webThk, flangeThickness: flangeThk };
+					const props = calculateShapeProperties('C-SHAPE', dimensions);
+					weight = (props.area * length * materialDensity) / 1e9;
+					surfaceArea = (props.perimeter * length) / 1e6;					
+					
+                    sizeDesc = `C ${depth}MM X ${flange}MM X ${webThk}MM X ${flangeThk}MM, CHANNEL, ${basicMaterial}, ${materialSpec}`;
+				}
+				else if (type === 'WT-SHAPE') {
+					const depth = parseFloat(document.getElementById('topWTDepth').value);
+					const flange = parseFloat(document.getElementById('topWTFlangeWidth').value);
+					const webThk = parseFloat(document.getElementById('topWTWebThickness').value);
+					const flangeThk = parseFloat(document.getElementById('topWTFlangeThickness').value);
+					
+					const dimensions = { depth, flangeWidth: flange, webThickness: webThk, flangeThickness: flangeThk };
+					const props = calculateShapeProperties('WT-SHAPE', dimensions);
+					weight = (props.area * length * materialDensity) / 1e9;
+					surfaceArea = (props.perimeter * length) / 1e6;					
+					
+                    sizeDesc = `WT ${depth}MM X ${flange}MM X ${webThk}MM X ${flangeThk}MM, WT BEAM, ${basicMaterial}, ${materialSpec}`;
+				}
+				else if (type === 'CHS') {
+					const dia = parseFloat(document.getElementById('topCHSDiameter').value);
+					const thk = parseFloat(document.getElementById('topCHSThickness').value);
+					
+					const dimensions = { diameter: dia, thickness: thk };
+					const props = calculateShapeProperties('CHS', dimensions);
+					weight = (props.area * length * materialDensity) / 1e9;
+					surfaceArea = (props.perimeter * length) / 1e6;					
+					
+                    sizeDesc = `CHS ${dia}MM DIA X ${thk}MM THK, CHS, ${basicMaterial}, ${materialSpec}`;
+				}
+				else if (type === 'RHS') {
+					const depth = parseFloat(document.getElementById('topRHSDepth').value);
+					const width = parseFloat(document.getElementById('topRHSWidth').value);
+					const thk = parseFloat(document.getElementById('topRHSThickness').value);
+					
+					const dimensions = { depth, width, thickness: thk };
+					const props = calculateShapeProperties('RHS', dimensions);
+					weight = (props.area * length * materialDensity) / 1e9;
+					surfaceArea = (props.perimeter * length) / 1e6;					
+					
+                    sizeDesc = `RHS ${depth}MM X ${width}MM X ${thk}MM, RHS, ${basicMaterial}, ${materialSpec}`;
+				}
+
+				totalWeight += weight;
+				totalSurfaceArea += surfaceArea;	
+				
+				results.components.push({
+					name: 'Top Angle',
+					icon: '🔼',
+					materials: [{
+						quantity: quantity,
+						description: `${sizeDesc} - ${length}MM LENGTH`,
+						weight: weight,
+						surfaceArea: surfaceArea						
+					}]
+				});
+			}
+			
+			// Wind Girder
+			if (document.getElementById('chkWindGirder').checked) {
+				const type = document.getElementById('windGirderType').value;
+				const quantity = parseInt(document.getElementById('windGirderQuantity').value);
+				const length = Math.round(tankCircumference);
+				let sizeDesc = '';
+				let unitWeight = 0;
+				let unitSurfaceArea = 0;
+			
+				if (type === 'L-SHAPE') {
+					const legA = parseFloat(document.getElementById('lLegA').value);
+					const legB = parseFloat(document.getElementById('lLegB').value);
+					const thickness = parseFloat(document.getElementById('lThickness').value);
+					const equality = legA === legB ? 'EQUAL' : 'UNEQUAL';
+					
+					const dimensions = { legA, legB, thickness };
+					const props = calculateShapeProperties('L-SHAPE', dimensions);
+					unitWeight = (props.area * length * materialDensity) / 1e9;
+					unitSurfaceArea = (props.perimeter * length) / 1e6;
+					
+					sizeDesc = `L ${legA}MM X ${legB}MM X ${thickness}MM, ANGLE BAR, ${basicMaterial}, ${equality}, ${materialSpec}`;
+				}
+				else if (type === 'H-SHAPE') {
+					const depth = parseFloat(document.getElementById('hDepth').value);
+					const flange = parseFloat(document.getElementById('hFlangeWidth').value);
+					const webThk = parseFloat(document.getElementById('hWebThickness').value);
+					const flangeThk = parseFloat(document.getElementById('hFlangeThickness').value);
+					
+					const dimensions = { depth, flangeWidth: flange, webThickness: webThk, flangeThickness: flangeThk };
+					const props = calculateShapeProperties('H-SHAPE', dimensions);
+					unitWeight = (props.area * length * materialDensity) / 1e9;
+					unitSurfaceArea = (props.perimeter * length) / 1e6;
+					
+					sizeDesc = `H ${depth}MM X ${flange}MM X ${webThk}MM X ${flangeThk}MM, BEAM, ${basicMaterial}, H SHAPE, ${materialSpec}`;
+				}
+				else if (type === 'C-SHAPE') {
+					const depth = parseFloat(document.getElementById('cDepth').value);
+					const flange = parseFloat(document.getElementById('cFlangeWidth').value);
+					const webThk = parseFloat(document.getElementById('cWebThickness').value);
+					const flangeThk = parseFloat(document.getElementById('cFlangeThickness').value);
+					
+					const dimensions = { depth, flangeWidth: flange, webThickness: webThk, flangeThickness: flangeThk };
+					const props = calculateShapeProperties('C-SHAPE', dimensions);
+					unitWeight = (props.area * length * materialDensity) / 1e9;
+					unitSurfaceArea = (props.perimeter * length) / 1e6;
+					
+					sizeDesc = `C ${depth}MM X ${flange}MM X ${webThk}MM X ${flangeThk}MM, CHANNEL, ${basicMaterial}, ${materialSpec}`;
+				}
+				else if (type === 'WT-SHAPE') {
+					const depth = parseFloat(document.getElementById('wtDepth').value);
+					const flange = parseFloat(document.getElementById('wtFlangeWidth').value);
+					const webThk = parseFloat(document.getElementById('wtWebThickness').value);
+					const flangeThk = parseFloat(document.getElementById('wtFlangeThickness').value);
+					
+					const dimensions = { depth, flangeWidth: flange, webThickness: webThk, flangeThickness: flangeThk };
+					const props = calculateShapeProperties('WT-SHAPE', dimensions);
+					unitWeight = (props.area * length * materialDensity) / 1e9;
+					unitSurfaceArea = (props.perimeter * length) / 1e6;
+					
+					sizeDesc = `WT ${depth}MM X ${flange}MM X ${webThk}MM X ${flangeThk}MM, WT BEAM, ${basicMaterial}, ${materialSpec}`;
+				}
+				else if (type === 'CHS') {
+					const dia = parseFloat(document.getElementById('chsDiameter').value);
+					const thk = parseFloat(document.getElementById('chsThickness').value);
+					
+					const dimensions = { diameter: dia, thickness: thk };
+					const props = calculateShapeProperties('CHS', dimensions);
+					unitWeight = (props.area * length * materialDensity) / 1e9;
+					unitSurfaceArea = (props.perimeter * length) / 1e6;
+					
+					sizeDesc = `CHS ${dia}MM DIA X ${thk}MM THK, CHS, ${basicMaterial}, ${materialSpec}`;
+				}
+				else if (type === 'RHS') {
+					const depth = parseFloat(document.getElementById('rhsDepth').value);
+					const width = parseFloat(document.getElementById('rhsWidth').value);
+					const thk = parseFloat(document.getElementById('rhsThickness').value);
+					
+					const dimensions = { depth, width, thickness: thk };
+					const props = calculateShapeProperties('RHS', dimensions);
+					unitWeight = (props.area * length * materialDensity) / 1e9;
+					unitSurfaceArea = (props.perimeter * length) / 1e6;
+					
+					sizeDesc = `RHS ${depth}MM X ${width}MM X ${thk}MM, RHS, ${basicMaterial}, ${materialSpec}`;
+				}
+			
+				const totalWeightWG = unitWeight * quantity;
+				const totalSurfaceAreaWG = unitSurfaceArea * quantity;
+				
+				totalWeight += totalWeightWG;
+				totalSurfaceArea += totalSurfaceAreaWG;
+			
+				results.components.push({
+					name: 'Wind Girder',
+					icon: '🔄',
+					materials: [{
+						quantity: quantity,
+						description: `${sizeDesc} - ${length}MM LENGTH`,
+						weight: totalWeightWG,
+						surfaceArea: totalSurfaceAreaWG
+					}]
+				});
+			}
+
+			// Sump Pit
+			if (document.getElementById('chkSumpPit').checked) {
+				const quantity = parseFloat(document.getElementById('sumpQuantity').value);
+				const diameter = parseFloat(document.getElementById('sumpDiameter').value);
+				const depth = parseFloat(document.getElementById('sumpDepth').value);
+				const thickness = parseFloat(document.getElementById('sumpThickness').value);
+				const circumference = Math.PI * diameter;
+				const bottomArea = Math.PI * Math.pow(diameter/2, 2);
+			
+				// Shell calculations
+				const shellVolume = thickness * circumference * depth;
+				const shellWeight = quantity * (shellVolume * materialDensity) / 1e9;
+				const shellSurfaceArea = quantity * (2 * circumference * depth) / 1e6;
+			
+				// Bottom calculations
+				const bottomVolume = thickness * bottomArea;
+				const bottomWeight = quantity * (bottomVolume * materialDensity) / 1e9;
+				const bottomSurfaceAreaCalc = quantity * (2 * bottomArea) / 1e6;
+			
+				totalWeight += shellWeight + bottomWeight;
+				totalSurfaceArea += shellSurfaceArea + bottomSurfaceAreaCalc;
+			
+				results.components.push({
+					name: 'Sump Pit',
+					icon: '⏺️',
+					materials: [
+						{
+							quantity: quantity,
+							description: `${thickness}MM X ${Math.round(circumference)}MM X ${depth}MM, PLATE, ${basicMaterial}, ${materialSpec} (SHELL)`,
+							weight: shellWeight,
+							surfaceArea: shellSurfaceArea
+						},
+						{
+							quantity: quantity,
+							description: `${thickness}MM X ${diameter}MM X ${diameter}MM, PLATE, ${basicMaterial}, ${materialSpec} (BOTTOM)`,
+							weight: bottomWeight,
+							surfaceArea: bottomSurfaceAreaCalc
+						}
+					]
+				});
+			}
+
+			// Anchor Chair
+			if (document.getElementById('chkAnchorChair').checked) {
+				const quantity = parseInt(document.getElementById('chairQuantity').value);                        
+				const webThickness = parseFloat(document.getElementById('chairWebThickness').value);				
+				const webHeight = parseFloat(document.getElementById('chairWebHeight').value);				
+				const webDepth = parseFloat(document.getElementById('chairWebDepth').value);	
+				const topPlateThick = parseFloat(document.getElementById('chairTopThick').value);
+				const topPlateWidth = parseFloat(document.getElementById('chairTopWidth').value);
+				const padThick = parseFloat(document.getElementById('shellThickness').value);
+				const boltSize = document.getElementById("boltSize").value;
+				const boltDia = parseInt(boltSize.replace("M", ""), 10);
+				
+				const nutThicknessTable = {
+					M8: 7.14, M10: 8.73, M12: 11.11, M14: 12.70, M16: 15.08, M18: 15.88, M20: 18.26, M22: 19.05, M24: 21.43,
+					M27: 23.81, M30: 25.40, M33: 28.58, M36: 30.96, M39: 31.75, M42: 34.13, M45: 35.72, M48: 38.10, M52: 42.07,
+					M56: 45.24, M60: 47.63, M64: 50.80, M68: 53.98, M72: 57.94, M76: 61.12, M80: 64.29
+				};
+			
+				const gripLen = webHeight + topPlateThick;
+				const embedLen = Math.ceil((boltDia * 12) / 50) * 50;
+				const nutLen = nutThicknessTable[boltSize];
+				const wasLen = 3;
+				const totalLen = Math.ceil((embedLen + gripLen + (nutLen * 2) + wasLen) / 5) * 5;
+				
+				// Web calculations (2 pieces per chair)
+				const webVolume = webThickness * webHeight * webDepth;
+				const webWeight = (webVolume * materialDensity / 1e9) * quantity * 2;
+				const webSurfaceArea = (2 * (webHeight * webDepth + webThickness * webHeight + webThickness * webDepth) / 1e6) * quantity * 2;
+				
+				// Top plate calculations
+				const topPlateVolume = topPlateThick * topPlateWidth * webDepth;
+				const topPlateWeight = (topPlateVolume * materialDensity / 1e9) * quantity;
+				const topPlateSurfaceArea = (2 * topPlateWidth * webDepth / 1e6) * quantity;
+				
+				// Pad plate calculations
+				const padWidth = topPlateWidth + 100;
+				const padLength = webHeight + topPlateThick + 100;
+				const padVolume = padThick * padWidth * padLength;
+				const padWeight = (padVolume * materialDensity / 1e9) * quantity;
+				const padSurfaceArea = (2 * padWidth * padLength / 1e6) * quantity;
+				
+				// Bolt weight estimation (approximate)
+				const boltWeight = (boltDia * boltDia * 0.00000617 * totalLen * materialDensity / 1000) * quantity;
+				const boltSurfaceArea = (Math.PI * boltDia * totalLen / 1e6) * quantity;
+			
+				totalWeight += webWeight + topPlateWeight + padWeight + boltWeight;
+				totalSurfaceArea += webSurfaceArea + topPlateSurfaceArea + padSurfaceArea + boltSurfaceArea;
+				
+				results.components.push({
+					name: 'Anchor Chair',
+					icon: '⏬',
+					materials: [
+						{
+							quantity: quantity * 2,
+							description: `${webThickness}MM X ${webHeight}MM X ${webDepth}MM, PLATE, ${basicMaterial}, ${materialSpec} (WEB)`,
+							weight: webWeight,
+							surfaceArea: webSurfaceArea
+						},
+						{
+							quantity: quantity,
+							description: `${topPlateThick}MM X ${topPlateWidth}MM X ${webDepth}MM, PLATE, ${basicMaterial}, ${materialSpec} (TOP PLATE)`,
+							weight: topPlateWeight,
+							surfaceArea: topPlateSurfaceArea
+						},
+						{
+							quantity: quantity,
+							description: `${padThick}MM X ${topPlateWidth + 100}MM X ${webHeight + topPlateThick + 100}MM, PLATE, ${basicMaterial}, ${materialSpec} (CHAIR REPAD)`,
+							weight: padWeight,
+							surfaceArea: padSurfaceArea
+						},
+						{
+							quantity: quantity,
+							description: `${boltSize} X ${totalLen}MM, BOLT, ${basicMaterial}, EXPANSION ANCHOR, C/W 2 NUTS & FLAT WASHER, HDG`,
+							weight: boltWeight,
+							surfaceArea: boltSurfaceArea
+						}						
+					]
+				});
+			}
+
+			// Lifting Lug
+			if (document.getElementById('chkLiftingLug').checked) {
+				const plateThickness = parseFloat(document.getElementById('lugPlateThickness').value) || 20;
+				const plateWidth = parseFloat(document.getElementById('lugPlateWidth').value) || 150;
+				const plateHeight = parseFloat(document.getElementById('lugPlateHeight').value) || 200;
+				const quantity = parseInt(document.getElementById('lugQuantity').value) || 4;
+				const padPlateThick = parseFloat(document.getElementById('padPlateThick').value) || 18;				
+			
+				// Lug plate calculations
+				const lugVolume = plateThickness * plateWidth * plateHeight;
+				const lugWeight = (lugVolume * materialDensity / 1e9) * quantity;
+				const lugSurfaceArea = (2 * (plateWidth * plateHeight + plateThickness * plateHeight + plateThickness * plateWidth) / 1e6) * quantity;
+			
+				// Pad plate calculations
+				const padWidth = plateWidth + 100;
+				const padHeight = plateHeight + 100;
+				const padVolume = padPlateThick * padWidth * padHeight;
+				const padWeight = (padVolume * materialDensity / 1e9) * quantity;
+				const padSurfaceArea = (2 * padWidth * padHeight / 1e6) * quantity;
+			
+				totalWeight += lugWeight + padWeight;
+				totalSurfaceArea += lugSurfaceArea + padSurfaceArea;
+			
+				results.components.push({
+					name: 'Lifting Lug',
+					icon: '⬆️',
+					materials: [
+						{
+							quantity: quantity,
+							description: `${plateThickness}MM X ${plateWidth}MM X ${plateHeight}MM, PLATE, ${basicMaterial}, ${materialSpec} (LIFTING EYE)`,
+							weight: lugWeight,
+							surfaceArea: lugSurfaceArea
+						},
+						{
+							quantity: quantity,
+							description: `${padPlateThick}MM X ${plateWidth + 100}MM X ${plateHeight + 100}MM, PLATE, ${basicMaterial}, ${materialSpec} (PAD PLATE)`,
+							weight: padWeight,
+							surfaceArea: padSurfaceArea
+						}						
+					]
+				});
+			}
+
+			// Additional Pipe
+			if (document.getElementById('chkAdditionalPipe').checked) {
+				const pipeItems = document.querySelectorAll('.pipe-item');
+				const materials = [];
+				
+				pipeItems.forEach((item) => {
+					const index = item.getAttribute('data-index');
+					const pipeSizeEl = document.getElementById(`pipeSize_${index}`);
+					const pipeThicknessEl = document.getElementById(`pipeThickness_${index}`);
+					const pipeLengthEl = document.getElementById(`pipeLength_${index}`);
+					
+					// Check if elements exist before accessing their values
+					if (pipeSizeEl && pipeThicknessEl && pipeLengthEl) {
+						const pipeSize = parseFloat(pipeSizeEl.value) || 50;
+						const pipeThickness = parseFloat(pipeThicknessEl.value) || 6;
+						const pipeLength = parseFloat(pipeLengthEl.value) || 150;
+						
+						const selectedOption = pipeSizeEl.options[pipeSizeEl.selectedIndex];
+						const englishSize = selectedOption.text.split(' ')[0];
+						
+						const pipeOD = PIPE_OD_MAPPING[pipeSize] || pipeSize;
+						
+						// Calculate pipe weight and surface area
+						const outerRadius = pipeOD / 2;
+						const innerRadius = outerRadius - pipeThickness;
+						const pipeArea = Math.PI * (outerRadius * outerRadius - innerRadius * innerRadius);
+						const pipePerimeter = Math.PI * pipeOD;
+						
+						const pipeWeight = (pipeArea * pipeLength * materialDensity) / 1e9;
+						const pipeSurfaceArea = (pipePerimeter * pipeLength) / 1e6;
+						
+						totalWeight += pipeWeight;
+						totalSurfaceArea += pipeSurfaceArea;
+						
+						materials.push({
+							quantity: 1,
+							description: `${englishSize} DIA, PIPE, ${basicMaterial}, ${pipeThickness}MM THICK, SMLS, PE, ASME B36.10 - ${pipeLength}MM LENGTH`,
+							weight: pipeWeight,
+							surfaceArea: pipeSurfaceArea
+						});
+					}
+				});
+			
+				if (materials.length > 0) {
+					results.components.push({
+						name: 'Additional Pipe',
+						icon: '📶',
+						materials: materials
+					});
+				}
+			}
+			
+			results.totals = {
+				totalWeight: totalWeight,
+				totalSurfaceArea: totalSurfaceArea
+			};
+            return results;
+        }
+
+        function displayResults(results) {
+            // Stats summary
+            const totalComponents = results.components.length;
+            const totalMaterials = results.components.reduce((sum, comp) => sum + comp.materials.length, 0);
+            const totalQuantity = results.components.reduce((sum, comp) => 
+                sum + comp.materials.reduce((s, m) => s + m.quantity, 0), 0);
+
+            const statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalComponents}</div>
+                    <div class="stat-label">Components</div>
+                </div>
+				<div class="stat-card">
+					<div class="stat-value">${totalQuantity}</div>
+					<div class="stat-label">Total Pieces</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${results.totals.totalWeight.toFixed(1)}</div>
+					<div class="stat-label">Total Weight (kg)</div>
+				</div>
+				<div class="stat-card">
+					<div class="stat-value">${results.totals.totalSurfaceArea.toFixed(1)}</div>
+					<div class="stat-label">Total S. Area (m2)</div>
+				</div>
+            `;
+
+            // Results grid
+            let resultsHTML = '<div class="results-grid">';
+            
+			results.components.forEach(component => {
+				let displayQuantity = 1; // default
+				let quantityLabel = 'unit';
+				
+				// Get the user-input quantity based on component name
+				switch(component.name) {
+					case 'Nameplate':
+						displayQuantity = parseInt(document.getElementById('nameplateQuantity')?.value) || 1;
+						break;
+					case 'Top Angle':
+						displayQuantity = 1; // Always 1
+						break;
+					case 'Wind Girder':
+						displayQuantity = parseInt(document.getElementById('windGirderQuantity')?.value) || 1;
+						break;
+					case 'Sump Pit':
+						displayQuantity = parseInt(document.getElementById('sumpQuantity')?.value) || 1;
+						break;
+					case 'Anchor Chair':
+						displayQuantity = parseInt(document.getElementById('chairQuantity')?.value) || 1;
+						break;
+					case 'Lifting Lug':
+						displayQuantity = parseInt(document.getElementById('lugQuantity')?.value) || 1;
+						break;
+					case 'Additional Pipe':
+						displayQuantity = component.materials.length; // Number of pipe items
+						quantityLabel = displayQuantity === 1 ? 'unit' : 'units';
+						break;
+					default:
+						displayQuantity = 1;
+				}
+				
+				resultsHTML += `
+					<div class="component-result">
+						<div class="component-header">
+							<div class="component-title">${component.icon} ${component.name}</div>
+							<div class="component-badge">${displayQuantity} ${quantityLabel}${displayQuantity > 1 && quantityLabel === 'unit' ? 's' : ''}</div>
+						</div>
+						<ul class="material-list">
+				`;
+				
+				component.materials.forEach(material => {
+					resultsHTML += `
+						<li class="material-item">
+							<strong>${material.quantity} PC${material.quantity > 1 ? 'S' : ''}</strong> - ${material.description}
+						</li>
+					`;
+				});
+				
+				resultsHTML += `
+						</ul>
+					</div>
+				`;
+			});
+            resultsHTML += '</div>';
+
+            // Update elements
+            const statsElement = document.getElementById('statsSummary');
+            const resultsElement = document.getElementById('results');
+            
+            if (statsElement) statsElement.innerHTML = statsHTML;
+            if (resultsElement) resultsElement.innerHTML = resultsHTML;
+        }
+
+		function exportMTO() {
+			// Get input parameters
+			const tankDiameter = document.getElementById('tankDiameter').value;
+			const tankHeight = document.getElementById('tankHeight').value;
+			const basicMaterial = document.getElementById('basicMaterial').value;
+			const materialSpec = document.getElementById('materialSpec').value;
+			
+			// Create Excel-compatible CSV content
+			let csvContent = '';
+			
+			// Header section
+			csvContent += 'TANK MISC MTO REPORT\n';
+			csvContent += `Generated,${new Date().toLocaleDateString()}\n`;
+			csvContent += '================================\n';
+			csvContent += '\n';
+			csvContent += 'PROJECT PARAMETERS:\n';
+			csvContent += `Tank Diameter,${tankDiameter} mm\n`;
+			csvContent += `Tank Height,${tankHeight} mm\n`;
+			csvContent += `Base Material,${basicMaterial}\n`;
+			csvContent += `Material Spec,${materialSpec}\n`;
+			csvContent += '\n';
+			csvContent += 'SUMMARY:\n';
+			csvContent += `Total Weight,${calculationResults.totals.totalWeight.toFixed(2)} kg\n`;
+			csvContent += `Total Surface Area,${calculationResults.totals.totalSurfaceArea.toFixed(2)} m2\n`;
+			csvContent += '\n';
+			csvContent += 'DETAILED MTO:\n';
+			csvContent += '================================\n';
+			csvContent += '\n';
+			
+			// Table headers for Excel
+			csvContent += 'Component,Quantity,Description,Weight (kg),Surface Area (m2)\n';
+			
+			// Components
+			calculationResults.components.forEach(component => {
+				component.materials.forEach(material => {
+					const escapedDescription = `"${material.description.replace(/"/g, '""')}"`;
+					const weight = material.weight ? material.weight.toFixed(3) : '0.000';
+					const surfaceArea = material.surfaceArea ? material.surfaceArea.toFixed(3) : '0.000';
+					csvContent += `${component.name},${material.quantity},${escapedDescription},${weight},${surfaceArea}\n`;
+				});
+			});
+			
+			// Add totals row
+			csvContent += '\n';
+			csvContent += `TOTALS,,"All Components",${calculationResults.totals.totalWeight.toFixed(2)},${calculationResults.totals.totalSurfaceArea.toFixed(2)}\n`;
+			
+			// Create and download Excel file
+			const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `Tank_Misc_MTO_${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);
+			
+			alert('MTO report exported successfully as Excel file!');
+		}
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            
+            // Add smooth transitions for inputs
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('focus', function() {
+                        if (this.parentElement) {
+                            this.parentElement.style.transform = 'translateY(-1px)';
+                        }
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        if (this.parentElement) {
+                            this.parentElement.style.transform = 'translateY(0)';
+                        }
+                    });
+                }
+            });
+        });
+    
+		let pipeItemIndex = 1;
+		
+		function addPipeItem() {
+			const container = document.getElementById('pipeItemsContainer');
+			const newItem = document.createElement('div');
+			newItem.className = 'pipe-item';
+			newItem.setAttribute('data-index', pipeItemIndex);
+			
+			newItem.innerHTML = `
+				<button type="button" class="remove-pipe-btn" onclick="removePipeItem(${pipeItemIndex})" title="Remove Item">❌</button>
+				<div class="form-grid">
+					<div class="input-group">
+						<label for="pipeSize_${pipeItemIndex}">Pipe Size</label>
+						<select id="pipeSize_${pipeItemIndex}">
+							<option value="15">1/2" (15mm) </option>
+							<option value="20">3/4" (20mm) </option>
+							<option value="25">1" (25mm) </option>
+							<option value="32">1-1/4" (32mm) </option>
+							<option value="40">1-1/2" (40mm) </option>
+							<option value="50">2" (50mm) </option>
+							<option value="65">2-1/2" (65mm) </option>
+							<option value="80">3" (80mm) </option>
+							<option value="90">3-1/2" (90mm) </option>
+							<option value="100">4" (100mm) </option>
+							<option value="130">5" (130mm) </option>
+							<option value="150">6" (150mm) </option>
+							<option value="200">8" (200mm) </option>
+							<option value="250">10" (250mm) </option>
+							<option value="300">12" (300mm) </option>
+							<option value="350">14" (350mm) </option>
+							<option value="400">16" (400mm) </option>
+							<option value="450">18" (450mm) </option>
+							<option value="500">20" (500mm) </option>
+							<option value="550">22" (550mm) </option>
+							<option value="600">24" (600mm) </option>
+							<option value="650">26" (650mm) </option>
+							<option value="700">28" (700mm) </option>
+							<option value="750">30" (750mm) </option>
+							<option value="800">32" (800mm) </option>
+							<option value="850">34" (850mm) </option>
+							<option value="900">36" (900mm) </option>							
+						</select>
+					</div>
+					<div class="input-group">
+						<label for="pipeThickness_${pipeItemIndex}">Pipe Thickness</label>
+						<input type="number" id="pipeThickness_${pipeItemIndex}" value="6">
+						<span class="unit-label">mm</span>
+					</div>
+					<div class="input-group">
+						<label for="pipeLength_${pipeItemIndex}">Pipe Length</label>
+						<input type="number" id="pipeLength_${pipeItemIndex}" value="150">
+						<span class="unit-label">mm</span>
+					</div>
+				</div>
+			`;
+			
+			container.appendChild(newItem);
+			pipeItemIndex++;
+		}
+		
+		function removePipeItem(index) {
+			const item = document.querySelector(`.pipe-item[data-index="${index}"]`);
+			if (item) {
+				item.remove();
+			}
+		}	
+	
+	</script>
+</body>
+</html>
