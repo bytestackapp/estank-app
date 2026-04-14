@@ -719,12 +719,12 @@
     
 	<div class="user-menu">
 		<div class="user-avatar-wrapper">
-			<div class="user-avatar" id="userAvatar">??</div>
+			<div class="user-avatar" id="userAvatar">...</div>
 		</div>
 
 		<div class="user-info-right">
 			<div class="date-time-display" id="dateTimeDisplay"></div>
-			<div class="welcome-text">Welcome, <strong id="currentUser">Guest</strong></div>				
+			<div class="welcome-text">Welcome, <strong id="currentUser">...</strong></div>				
 			<button type="button" id="logoutBtn" class="logout-link">Log Out</button>
 		</div>
 	</div>
@@ -944,8 +944,8 @@ fetch('/api/current-user')
 		}
 		avatarElem.textContent = initials;
 	} else {
-		userElem.textContent = 'Guest';
-		avatarElem.textContent = '??';
+		userElem.textContent = '...';
+		avatarElem.textContent = '...';
 	}
 })
 .catch(err => console.error('Failed to fetch current user:', err));
@@ -1160,15 +1160,10 @@ document.addEventListener('click', function(event) {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM loaded, initializing...');
 
-  // Load current user (set during login)
-  const currentUser = localStorage.getItem('currentUser') || 'Guest';
-  document.getElementById('currentUser').textContent = currentUser;
-
-  // Avatar initials
+  // Show loading state until API returns user data
+  document.getElementById('currentUser').textContent = '...';
   const avatar = document.getElementById('userAvatar');
-  if (avatar && currentUser) {
-    avatar.textContent = currentUser.charAt(0).toUpperCase() + (currentUser.charAt(1) || '').toUpperCase();
-  }
+  if (avatar) avatar.textContent = '...';
 
   // Logout button → open modal
   const logoutBtn = document.getElementById('logoutBtn');
@@ -1185,7 +1180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmLogoutBtn.addEventListener('click', function() {
       console.log('User logged out');
       localStorage.removeItem('currentUser');
-      window.location.href = 'login.html';
+      fetch('/api/logout').then(() => { window.location.href = '/login'; });
     });
   }
 
