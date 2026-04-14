@@ -9,6 +9,7 @@
     { "src": "/login", "dest": "/public/login.html" },
     { "src": "/app", "dest": "/public/homepage.html" },
     { "src": "/admin", "dest": "/public/admin.html" },
+    { "src": "/reset-password", "dest": "/public/reset-password.html" },
     { "src": "/", "dest": "/public/login.html" },
     { "src": "/(.*)\\.html", "dest": "/public/$1.html" },
     { "src": "/(.*)", "dest": "/public/$1" }
