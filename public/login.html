@@ -3,7 +3,6 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script defer src="/_vercel/insights/script.js"></script>
   <title>Login - Tank MTO Estimator Suite</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -557,7 +556,7 @@
         Please check your username and password and try again.
       </div>
 
-      <form method="POST" action="/login" id="loginForm">
+      <form method="POST" action="" id="loginForm">
         <div class="form-group">
           <label class="form-label" for="username">Username</label>
           <input 
@@ -652,7 +651,10 @@
 	<div class="modal-content">
 		<button class="close" onclick="closeModal('forgotPasswordModal')">&times;</button>
 		<h2>🔑 Forgot Password</h2>
-		<p>Please contact the administrator to reset your password.</p>
+		<p>Enter your email and we'll send you a reset link.</p>
+		<input type="email" id="forgotEmail" class="form-input" placeholder="Enter your email" style="margin:12px 0;width:100%;box-sizing:border-box;">
+		<button class="login-btn" onclick="submitForgotPassword()" style="width:100%;">Send Reset Link</button>
+		<p id="forgotMsg" style="margin-top:10px;font-size:13px;text-align:center;"></p>
 	</div>
 	</div>
 
@@ -866,8 +868,8 @@
                 } else {
                     return res.text().then(text => {
                         // If the server redirects or returns HTML, handle it
-                        if (res.ok && (text.includes('<html') || res.url.includes('/app'))) {
-                            return { success: true, redirect: res.url };
+                        if (res.ok && (text.includes('<html') || false)) {
+                            return { success: true };
                         }
                         return { success: false, message: text || 'Login failed' };
                     });
@@ -914,7 +916,7 @@
                         if (response.redirect) {
                             window.location.href = response.redirect;
                         } else {
-                            window.location.href = '/app/';
+                            window.location.href = '/app';
                         }
                     } else {
                         document.getElementById('loginErrorMessage').textContent =
@@ -976,6 +978,21 @@
         this.style.borderColor = 'rgba(102, 126, 234, 0.5)';
       });
     });
+
+function submitForgotPassword() {
+    var email = document.getElementById('forgotEmail').value.trim();
+    var msg = document.getElementById('forgotMsg');
+    if (!email) { msg.style.color='red'; msg.textContent='Please enter your email.'; return; }
+    msg.style.color='#555'; msg.textContent='Sending...';
+    fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) { msg.style.color='green'; msg.textContent=data.message||'Reset link sent!'; })
+    .catch(function() { msg.style.color='red'; msg.textContent='Something went wrong.'; });
+}
 	
 	// Modal controls
 	function openModal(id) {
