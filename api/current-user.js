@@ -1,27 +1,25 @@
-const { getSupabase, getSessionUser } = require('../lib/supabase');
+const { getSupabase, requireAuth } = require('../lib/supabase');
 
 module.exports = async function handler(req, res) {
-  const session = getSessionUser(req);
-  if (!session) {
-    return res.json({ username: null, role: null });
-  }
+  const user = await requireAuth(req, res);
+  if (!user) return;
 
   const supabase = getSupabase();
-  const { data: user } = await supabase
+  const { data: profile } = await supabase
     .from('users')
     .select('username, first_name, last_name, email, role')
-    .eq('username', session.username)
+    .eq('auth_id', user.id)
     .single();
 
-  if (user) {
+  if (profile) {
     return res.json({
-      username: user.username,
-      firstName: user.first_name || null,
-      lastName: user.last_name || null,
-      email: user.email || null,
-      role: user.role || 'user',
+      username: profile.username,
+      firstName: profile.first_name || null,
+      lastName: profile.last_name || null,
+      email: profile.email || null,
+      role: profile.role || 'user',
     });
   }
 
-  return res.json({ username: session.username, role: session.role || 'user' });
+  return res.json({ username: null, role: null });
 };

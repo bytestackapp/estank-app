@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const { getSupabase, setTokenCookie } = require('../lib/supabase');
 
 module.exports = async function handler(req, res) {
@@ -10,21 +9,28 @@ module.exports = async function handler(req, res) {
   }
 
   const supabase = getSupabase();
-  const { data: user, error } = await supabase
+
+  // Look up email from username
+  const { data: profile } = await supabase
     .from('users')
-    .select('*')
+    .select('email, role')
     .eq('username', username)
     .single();
 
-  if (error || !user) {
+  if (!profile) {
     return res.json({ success: false, message: 'Invalid username or password.' });
   }
 
-  const match = bcrypt.compareSync(password, user.password);
-  if (!match) {
+  // Sign in with Supabase Auth
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: profile.email,
+    password,
+  });
+
+  if (error || !data.session) {
     return res.json({ success: false, message: 'Invalid username or password.' });
   }
 
-  setTokenCookie(res, { username: user.username, role: user.role || 'user' });
-  return res.json({ success: true, role: user.role || 'user' });
+  setTokenCookie(res, data.session.access_token);
+  return res.json({ success: true, role: profile.role || 'user' });
 };

@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const { getSupabase } = require('../lib/supabase');
 
 module.exports = async function handler(req, res) {
@@ -11,6 +10,7 @@ module.exports = async function handler(req, res) {
 
   const supabase = getSupabase();
 
+  // Check active users
   const { data: existingUser } = await supabase
     .from('users')
     .select('username, email')
@@ -21,6 +21,7 @@ module.exports = async function handler(req, res) {
     return res.json({ success: false, message: 'Username or email already exists.' });
   }
 
+  // Check pending users
   const { data: existingPending } = await supabase
     .from('pending_users')
     .select('username, email')
@@ -31,13 +32,13 @@ module.exports = async function handler(req, res) {
     return res.json({ success: false, message: 'Your account application is either in process or already active.' });
   }
 
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  // Store in pending (no password hashing needed, Supabase Auth handles it)
   const { error } = await supabase.from('pending_users').insert({
     first_name: firstName,
     last_name: lastName,
     email,
     username,
-    password: hashedPassword,
+    password, // stored temporarily, used when admin approves
   });
 
   if (error) {
