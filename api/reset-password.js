@@ -8,15 +8,27 @@ module.exports = async function handler(req, res) {
     return res.json({ success: false, message: 'Missing required fields.' });
   }
 
+  if (new_password.length < 6) {
+    return res.json({ success: false, message: 'Password must be at least 6 characters.' });
+  }
+
   const supabase = getSupabase();
 
-  const { error } = await supabase.auth.admin.updateUserById(
-    access_token,
-    { password: new_password }
-  );
+  // Get the user from the access token
+  const { data: { user }, error: userError } = await supabase.auth.getUser(access_token);
+
+  if (userError || !user) {
+    return res.json({ success: false, message: 'Invalid or expired reset link. Please request a new one.' });
+  }
+
+  // Update the password using admin
+  const { error } = await supabase.auth.admin.updateUserById(user.id, {
+    password: new_password
+  });
 
   if (error) {
-    return res.json({ success: false, message: 'Failed to reset password.' });
+    console.error('Password reset error:', error);
+    return res.json({ success: false, message: 'Failed to reset password. Please try again.' });
   }
 
   return res.json({ success: true, message: 'Password reset successfully.' });

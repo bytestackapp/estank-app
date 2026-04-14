@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
   // Notify admin about new signup
   try {
     await sendMail({
-      to: process.env.GMAIL_USER,
+      to: process.env.ADMIN_EMAIL || process.env.GMAIL_USER,
       subject: 'New signup request - Tank Estimator',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">

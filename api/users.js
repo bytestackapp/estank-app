@@ -145,10 +145,20 @@ module.exports = async function handler(req, res) {
     const { username } = req.body;
     if (!username) return res.status(400).json({ message: 'Username is required' });
 
+    // Get auth_id before deleting
+    const { data: userToDelete } = await supabase
+      .from('users').select('auth_id').eq('username', username).maybeSingle();
+
     const { error, count } = await supabase
       .from('users').delete({ count: 'exact' }).eq('username', username);
     if (error) return res.status(500).json({ message: 'Failed to delete user' });
     if (count === 0) return res.status(404).json({ message: `User '${username}' not found.` });
+
+    // Also delete from Supabase Auth
+    if (userToDelete?.auth_id) {
+      await supabase.auth.admin.deleteUser(userToDelete.auth_id);
+    }
+
     return res.json({ message: `User '${username}' deleted successfully.` });
   }
 
