@@ -1,10 +1,11 @@
 {
   "name": "tank-estimator",
   "version": "1.0.0",
+  "description": "Tank Estimator App by Bytestack",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
-    "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.0"
   }
 }
