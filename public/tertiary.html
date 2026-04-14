@@ -536,8 +536,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+<script src="/free-user.js"></script>
 </head>
 <body>
+<script>document.addEventListener("DOMContentLoaded", () => FreeTrial.init());</script>
     <div class="bg-shapes">
         <div class="shape"></div>
         <div class="shape"></div>
@@ -854,7 +856,7 @@
 
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
-                    <button class="btn btn-primary" onclick="calculateMTO()">
+                    <button class="btn btn-primary lock-free" onclick="calculateMTO()">
                         <span>Calculate MTO</span>
                         <div class="loading-spinner" id="loadingStep2"></div>
                     </button>
@@ -870,7 +872,7 @@
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
                     <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
-                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <button class="btn btn-success lock-free" onclick="exportMTO()">📊 Export MTO</button>
 					<a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
                 </div>
             </div>

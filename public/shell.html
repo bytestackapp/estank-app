@@ -535,8 +535,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+<script src="/free-user.js"></script>
 </head>
 <body>
+<script>document.addEventListener("DOMContentLoaded", () => FreeTrial.init());</script>
     <div class="bg-shapes">
         <div class="shape"></div>
         <div class="shape"></div>
@@ -659,7 +661,7 @@
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
                     <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
-                    <button class="btn btn-success" onclick="exportMTO()">📊 Export MTO</button>
+                    <button class="btn btn-success lock-free" onclick="exportMTO()">📊 Export MTO</button>
                     <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
                 </div>
             </div>
@@ -967,6 +969,16 @@
 			step3Element.insertAdjacentHTML('afterbegin', shellInfoHTML);
 		
 			document.getElementById('statsSummary').innerHTML = statsHTML;
+			// Apply blur to weight and area for free users
+			if (typeof FreeTrial !== 'undefined' && FreeTrial.isFreeUser) {
+				const statValues = document.querySelectorAll('#statsSummary .stat-value');
+				if (statValues.length >= 4) {
+					statValues[2].style.filter = 'blur(6px)';
+					statValues[2].style.userSelect = 'none';
+					statValues[3].style.filter = 'blur(6px)';
+					statValues[3].style.userSelect = 'none';
+				}
+			}
 			document.getElementById('results').innerHTML = resultsHTML;
 		}
 
