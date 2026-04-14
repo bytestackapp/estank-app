@@ -1,4 +1,5 @@
 const { getSupabase } = require('../lib/supabase');
+const { sendMail } = require('../lib/mailer');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -18,25 +19,16 @@ module.exports = async function handler(req, res) {
     }
   });
 
-  if (error || !data) {
+  if (error || !data?.properties?.action_link) {
+    // Always return success to prevent email enumeration
     return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
   }
 
-  const resetLink = data.properties?.action_link;
-  if (!resetLink) {
-    return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
-  }
+  const resetLink = data.properties.action_link;
 
-  // Send email via Resend
-  const resendRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: 'Tank Estimator <onboarding@resend.dev>',
-      to: [email],
+  try {
+    await sendMail({
+      to: email,
       subject: 'Reset your Tank Estimator password',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
@@ -47,13 +39,13 @@ module.exports = async function handler(req, res) {
             Reset Password
           </a>
           <p style="color:#718096;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
+          <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
+          <p style="color:#a0aec0;font-size:12px;">Bytestack — Tank Estimator App</p>
         </div>
       `,
-    }),
-  });
-
-  if (!resendRes.ok) {
-    console.error('Resend error:', await resendRes.text());
+    });
+  } catch (err) {
+    console.error('Email send error:', err);
   }
 
   return res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });

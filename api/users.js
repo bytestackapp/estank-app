@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { getSupabase, requireAdmin } = require('../lib/supabase');
+const { sendMail } = require('../lib/mailer');
 
 module.exports = async function handler(req, res) {
   const action = req.query.action;
@@ -71,6 +72,32 @@ module.exports = async function handler(req, res) {
     if (insertError) return res.status(500).json({ message: 'Failed to create user profile' });
 
     await supabase.from('pending_users').delete().eq('username', username);
+
+    // Send welcome email to approved user
+    try {
+      await sendMail({
+        to: pendingUser.email,
+        subject: 'Your Tank Estimator account has been approved!',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+            <h2 style="color: #2d3748;">Welcome to Tank Estimator!</h2>
+            <p style="color: #4a5568;">Hi ${pendingUser.first_name}, your account has been approved. You can now log in!</p>
+            <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+              <tr><td style="padding:8px;color:#718096;width:120px;">Username</td><td style="padding:8px;color:#2d3748;font-weight:500;">${pendingUser.username}</td></tr>
+            </table>
+            <a href="https://tank-estimator-app.vercel.app/login"
+               style="display:inline-block;padding:12px 24px;background:#38a169;color:#fff;text-decoration:none;border-radius:8px;font-weight:500;">
+              Log In Now
+            </a>
+            <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
+            <p style="color:#a0aec0;font-size:12px;">Bytestack — Tank Estimator App</p>
+          </div>
+        `,
+      });
+    } catch (err) {
+      console.error('Welcome email error:', err);
+    }
+
     return res.json({ message: `User "${username}" approved successfully` });
   }
 
@@ -80,10 +107,35 @@ module.exports = async function handler(req, res) {
     const { username } = req.body;
     if (!username) return res.status(400).json({ message: 'Username is required' });
 
+    const { data: pendingUser } = await supabase
+      .from('pending_users').select('email, first_name').eq('username', username).single();
+
     const { error, count } = await supabase
       .from('pending_users').delete({ count: 'exact' }).eq('username', username);
     if (error) return res.status(500).json({ message: 'Failed to reject user' });
     if (count === 0) return res.status(404).json({ message: 'Pending user not found' });
+
+    // Notify rejected user
+    if (pendingUser) {
+      try {
+        await sendMail({
+          to: pendingUser.email,
+          subject: 'Update on your Tank Estimator account request',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+              <h2 style="color: #2d3748;">Account Request Update</h2>
+              <p style="color: #4a5568;">Hi ${pendingUser.first_name}, unfortunately your account request was not approved at this time.</p>
+              <p style="color: #4a5568;">If you think this is a mistake, please contact the administrator.</p>
+              <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;">
+              <p style="color:#a0aec0;font-size:12px;">Bytestack — Tank Estimator App</p>
+            </div>
+          `,
+        });
+      } catch (err) {
+        console.error('Rejection email error:', err);
+      }
+    }
+
     return res.json({ message: `User "${username}" rejected successfully` });
   }
 
