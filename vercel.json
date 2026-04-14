@@ -7,7 +7,7 @@
   "routes": [
     { "src": "/api/users/(.*)", "dest": "/api/users.js?action=$1" },
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
-    { "src": "/free-user.js", "dest": "/public/free-user.js" },
+    { "src": "/free-user.js", "dest": "/public/free-user.js", "headers": { "Content-Type": "application/javascript" } },
     { "src": "/login", "dest": "/public/login.html" },
     { "src": "/app", "dest": "/public/homepage.html" },
     { "src": "/admin", "dest": "/public/admin.html" },
