@@ -916,7 +916,15 @@
             });
             resultsHTML += '</div>';
 
-            document.getElementById('statsSummary').innerHTML = statsHTML;
+			document.getElementById('statsSummary').innerHTML = statsHTML;
+            // Apply blur for free trial users after stats render
+            if (typeof window.FreeTrial !== 'undefined' && window.FreeTrial.isFreeUser) {
+                document.querySelectorAll('#statsSummary .blur-free').forEach(el => {
+                    el.style.filter = 'blur(6px)';
+                    el.style.userSelect = 'none';
+                    el.style.pointerEvents = 'none';
+                });
+            }
             document.getElementById('results').innerHTML = resultsHTML;
         }
 
