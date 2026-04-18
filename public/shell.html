@@ -658,8 +658,11 @@
                 <div class="results-section" id="results"></div>
                 <div class="action-buttons">
                     <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
-                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>
-                    <button class="btn btn-success lock-free" onclick="exportMTO()">📊 Export MTO</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Start Over</button>	
+                    <div style="position:relative;display:inline-block;">
+                      <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;z-index:1;">🔒 LOCKED</span>
+                      <button class="btn btn-success lock-free" onclick="exportMTO()">📊 Export MTO</button>
+                    </div>		
                     <a href="homepage.html" class="btn btn-secondary">🏠 Home</a>
                 </div>
             </div>
@@ -922,11 +925,17 @@
 					<div class="stat-label">Total Items</div>
 				</div>
 				<div class="stat-card">
+                <div style="position:relative;display:inline-block;">
+                   <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;z-index:1;">🔒 LOCKED</span>				
 					<div class="stat-value">${totalWeight.toFixed(1)}</div>
+				</div>	
 					<div class="stat-label">Total Weight (kg)</div>
 				</div>
 				<div class="stat-card">
+                <div style="position:relative;display:inline-block;">
+                   <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;z-index:1;">🔒 LOCKED</span>				
 					<div class="stat-value">${totalSurfaceArea.toFixed(1)}</div>
+				</div>
 					<div class="stat-label">Total S. Area (m2)</div>
 				</div>
 			`;
