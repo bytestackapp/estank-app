@@ -874,14 +874,14 @@
 				<div class="stat-card">
                 <div style="position:relative;display:inline-block;">
                     <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;z-index:1;">🔒 LOCKED</span>				
-					<div class="stat-value">${totalWeight.toFixed(1)}</div>
+					<div class="stat-value blur-free">${totalWeight.toFixed(1)}</div>
 				</div>	
 					<div class="stat-label">Total Weight (kg)</div>
 				</div>
 				<div class="stat-card">
                 <div style="position:relative;display:inline-block;">
                     <span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;z-index:1;">🔒 LOCKED</span>								
-					<div class="stat-value">${totalSurfaceArea.toFixed(1)}</div>
+					<div class="stat-value blur-free">${totalSurfaceArea.toFixed(1)}</div>
 				</div>	
 					<div class="stat-label">Total S. Area (m2)</div>
 				</div>
@@ -1008,28 +1008,7 @@
                 });
             });
         });
-    
-    // Blur weight and area for free trial users
-if (typeof window.FreeTrial !== 'undefined' && window.FreeTrial.isFreeUser) {
-    const allLabels = document.querySelectorAll('.stat-label, .result-label, td, th, label, div');
-    allLabels.forEach(el => {
-        const text = el.textContent || '';
-        if (text.includes('Total Weight') || text.includes('Total S. Area')) {
-            const valueEl = el.previousElementSibling || el.nextElementSibling;
-            if (valueEl) {
-                valueEl.style.filter = 'blur(6px)';
-                valueEl.style.userSelect = 'none';
-            }
-            el.closest('tr, .stat-item, .result-row')?.querySelectorAll('td, .stat-value')
-              .forEach(v => {
-                if (!v.textContent.includes('Total Weight') && !v.textContent.includes('Total S. Area')) {
-                    v.style.filter = 'blur(6px)';
-                    v.style.userSelect = 'none';
-                }
-            });
-        }
-    });
-}
+		
 </script>
 <script>
 window.FreeTrial = {
