@@ -544,7 +544,7 @@
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
-        <div class="login-icon">🔐</div>
+        <div class="login-icon">??</div>
         <h1 class="login-title">Welcome Back</h1>
         <p class="login-subtitle">Sign in to Tank MTO Estimator Suite</p>
       </div>
@@ -552,7 +552,7 @@
 
 
       <div id="errorBox" class="error-box">
-        <strong>⚠️ Authentication Failed</strong><br>
+        <strong>?? Authentication Failed</strong><br>
         Please check your username and password and try again.
       </div>
 
@@ -599,6 +599,7 @@
       <div class="forgot-password">
         <a href="#" onclick="openModal('forgotPasswordModal')">Forgot your password?</a>
 		<a href="#" onclick="openModal('signUpModal')" class="signup-link">Sign Up</a>
+	<a href="#" onclick="openModal('freeTrialModal')" class="signup-link" style="color:#38a169;">?? Free Trial</a>
       </div>
 
 		<div class="footer-links">
@@ -614,7 +615,7 @@
   <div id="aboutModal" class="modal">
     <div class="modal-content">
       <button class="close" onclick="closeModal('aboutModal')">&times;</button>
-      <h2>🛢️ About Tank MTO Estimator Suite</h2>
+      <h2>??? About Tank MTO Estimator Suite</h2>
       <p><strong>Version:</strong> 2.0</p>
       <p><strong>Release:</strong> August 2025</p>
       <p><strong>Developer:</strong> M.O. Gonda</p>
@@ -625,11 +626,11 @@
   <div id="supportModal" class="modal">
     <div class="modal-content">
       <button class="close" onclick="closeModal('supportModal')">&times;</button>
-      <h2>💬 Technical Support</h2>
+      <h2>?? Technical Support</h2>
       <p><strong>For technical assistance or feature requests:</strong></p>
-      <p>📧 <strong>Email:</strong> support@tankmto.com</p>
-      <p>📞 <strong>Phone:</strong> +1-XXX-XXX-XXXX</p>
-      <p>🕒 <strong>Business Hours:</strong> Mon-Fri 9AM-5PM EST</p>
+      <p>?? <strong>Email:</strong> support@tankmto.com</p>
+      <p>?? <strong>Phone:</strong> +1-XXX-XXX-XXXX</p>
+      <p>?? <strong>Business Hours:</strong> Mon-Fri 9AM-5PM EST</p>
       <p>We're here to help you get the most out of your Tank MTO Estimator Suite experience.</p>
     </div>
   </div>
@@ -637,20 +638,20 @@
   <div id="privacyModal" class="modal">
     <div class="modal-content">
       <button class="close" onclick="closeModal('privacyModal')">&times;</button>
-      <h2>🔒 Privacy Policy</h2>
+      <h2>?? Privacy Policy</h2>
       <p><strong>Your data security is our priority:</strong></p>
-      <p>• All calculations performed locally in your browser</p>
-      <p>• No personal data stored on external servers</p>
-      <p>• Session-based authentication only</p>
-      <p>• GDPR compliant data handling procedures</p>
-      <p>• No tracking or analytics without consent</p>
+      <p>� All calculations performed locally in your browser</p>
+      <p>� No personal data stored on external servers</p>
+      <p>� Session-based authentication only</p>
+      <p>� GDPR compliant data handling procedures</p>
+      <p>� No tracking or analytics without consent</p>
     </div>
   </div>
 
 	<div id="forgotPasswordModal" class="modal">
 	<div class="modal-content">
 		<button class="close" onclick="closeModal('forgotPasswordModal')">&times;</button>
-		<h2>🔑 Forgot Password</h2>
+		<h2>?? Forgot Password</h2>
 		<p>Enter your email and we'll send you a reset link.</p>
 		<input type="email" id="forgotEmail" class="form-input" placeholder="Enter your email" style="margin:12px 0;width:100%;box-sizing:border-box;">
 		<button class="login-btn" onclick="submitForgotPassword()" style="width:100%;">Send Reset Link</button>
@@ -661,7 +662,7 @@
 	<div id="signUpModal" class="modal">
 	<div class="modal-content">
 		<button class="close" onclick="closeModal('signUpModal')">&times;</button>
-		<h2>✍️ Sign Up</h2>
+		<h2>?? Sign Up</h2>
 		<form id="signUpForm" onsubmit="submitSignUp(event)">
 		<div class="form-group">
 			<label class="form-label" for="firstName">First Name</label>
@@ -694,7 +695,7 @@
 	<div id="signUpSuccessModal" class="modal">
 	<div class="modal-content">
 		<button class="close" onclick="closeModal('signUpSuccessModal')">&times;</button>
-		<h2>✍️ Application Submitted</h2>
+		<h2>?? Application Submitted</h2>
 		<p>Your application request has been submitted. Please wait for admin approval.</p>
 	</div>
 	</div>
@@ -702,7 +703,7 @@
 	<div id="signUpErrorModal" class="modal">
 	<div class="modal-content">
 		<button class="close" onclick="closeModal('signUpErrorModal')">&times;</button>
-		<h2>❌ Sign Up Error</h2>
+		<h2>? Sign Up Error</h2>
 		<p id="signUpErrorMessage">Error: Your application for this account is already being processed.</p>
 	</div>
 	</div>
@@ -710,15 +711,41 @@
 	<div id="loginErrorModal" class="modal">
   <div class="modal-content">
     <button class="close" onclick="closeModal('loginErrorModal')">&times;</button>
-    <h2>❌ Login Error</h2>
+    <h2>? Login Error</h2>
     <p id="loginErrorMessage">Invalid username or password. Please try again.</p>
   </div>
 </div>
 	
-  <div id="comingSoonModal" class="modal">
+  
+	<div id="freeTrialModal" class="modal">
+	<div class="modal-content">
+		<button class="close" onclick="closeModal('freeTrialModal')">&times;</button>
+		<h2>?? Start Free Trial</h2>
+		<p>Get 3 days of free access. No credit card required.</p>
+		<form id="freeTrialForm" onsubmit="submitFreeTrial(event)">
+			<div class="form-group">
+				<label>First Name</label>
+				<input type="text" id="trialFirstName" class="form-input" placeholder="First Name" required>
+			</div>
+			<div class="form-group">
+				<label>Last Name</label>
+				<input type="text" id="trialLastName" class="form-input" placeholder="Last Name" required>
+			</div>
+			<div class="form-group">
+				<label>Email Address</label>
+				<input type="email" id="trialEmail" class="form-input" placeholder="your@email.com" required>
+			</div>
+			<p style="font-size:12px;color:#718096;margin-bottom:12px;">Your login credentials will be sent to your email.</p>
+			<button type="submit" class="login-btn" style="width:100%;">Start My Free Trial</button>
+			<p id="freeTrialMsg" style="margin-top:10px;font-size:13px;text-align:center;"></p>
+		</form>
+	</div>
+	</div>
+
+	<div id="comingSoonModal" class="modal">
     <div class="modal-content">
       <button class="close" onclick="closeModal('comingSoonModal')">&times;</button>
-      <h2>🚀 Coming Soon</h2>
+      <h2>?? Coming Soon</h2>
       <p id="comingSoonText">This feature is currently under development.</p>
       <p><strong>Expected Release:</strong> Next update</p>
       <p>Stay tuned for more exciting features and improvements!</p>
@@ -938,19 +965,19 @@
 
     // Placeholder functions for footer links
     function showComingSoon(feature) {
-      alert(`🚀 ${feature} feature is coming soon!\n\nThis will be available in the next update.`);
+      alert(`?? ${feature} feature is coming soon!\n\nThis will be available in the next update.`);
     }
 
     function showAbout() {
-      alert(`🛢️ Tank MTO Estimator Suite v2.0\n\nProfessional engineering tools for accurate material take-offs.\n\nDeveloped by: M.O. Gonda\nRelease: August 2025`);
+      alert(`??? Tank MTO Estimator Suite v2.0\n\nProfessional engineering tools for accurate material take-offs.\n\nDeveloped by: M.O. Gonda\nRelease: August 2025`);
     }
 
     function showSupport() {
-      alert(`💬 Technical Support\n\nFor technical assistance or feature requests:\n\n📧 Email: support@tankmto.com\n📞 Phone: +1-XXX-XXX-XXXX\n\nBusiness hours: Mon-Fri 9AM-5PM EST`);
+      alert(`?? Technical Support\n\nFor technical assistance or feature requests:\n\n?? Email: support@tankmto.com\n?? Phone: +1-XXX-XXX-XXXX\n\nBusiness hours: Mon-Fri 9AM-5PM EST`);
     }
 
     function showPrivacy() {
-      alert(`🔒 Privacy Policy\n\nYour data security is our priority:\n\n• All calculations performed locally\n• No personal data stored on servers\n• Session-based authentication only\n• GDPR compliant data handling`);
+      alert(`?? Privacy Policy\n\nYour data security is our priority:\n\n� All calculations performed locally\n� No personal data stored on servers\n� Session-based authentication only\n� GDPR compliant data handling`);
     }
 
     // Enhanced keyboard navigation
@@ -995,6 +1022,53 @@ function submitForgotPassword() {
 }
 	
 	// Modal controls
+
+	function submitFreeTrial(event) {
+		event.preventDefault();
+		const firstName = document.getElementById('trialFirstName').value.trim();
+		const lastName = document.getElementById('trialLastName').value.trim();
+		const email = document.getElementById('trialEmail').value.trim();
+		const msg = document.getElementById('freeTrialMsg');
+		const btn = event.target.querySelector('button[type="submit"]');
+
+		if (!firstName || !lastName || !email) {
+			msg.style.color = 'red';
+			msg.textContent = 'Please fill in all fields.';
+			return;
+		}
+
+		btn.disabled = true;
+		btn.textContent = 'Processing...';
+		msg.style.color = '#555';
+		msg.textContent = 'Creating your trial account...';
+
+		fetch('/api/free-trial', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ firstName, lastName, email })
+		})
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			if (data.success) {
+				msg.style.color = 'green';
+				msg.textContent = data.message;
+				btn.textContent = 'Check Your Email!';
+				document.getElementById('freeTrialForm').reset();
+			} else {
+				msg.style.color = 'red';
+				msg.textContent = data.message || 'Something went wrong. Please try again.';
+				btn.disabled = false;
+				btn.textContent = 'Start My Free Trial';
+			}
+		})
+		.catch(function() {
+			msg.style.color = 'red';
+			msg.textContent = 'Something went wrong. Please try again.';
+			btn.disabled = false;
+			btn.textContent = 'Start My Free Trial';
+		});
+	}
+
 	function openModal(id) {
 		document.getElementById(id).style.display = "block";
 	}
@@ -1008,7 +1082,7 @@ function submitForgotPassword() {
 		if (e.target.classList.contains('modal')) {
 			const modalId = e.target.id;
 			// Prevent closing signup modal and other form modals by outside click
-			if (modalId !== 'signUpModal' && modalId !== 'signUpSuccessModal' && modalId !== 'signUpErrorModal') {
+			if (modalId !== 'signUpModal' && modalId !== 'signUpSuccessModal' && modalId !== 'signUpErrorModal' && modalId !== 'freeTrialModal') {
 				e.target.style.display = 'none';
 			}
 		}

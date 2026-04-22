@@ -1019,16 +1019,17 @@
       try {
         const response = await fetch('/api/current-user');
         const userData = await response.json();
+		if (!user || !user.username) { window.location.href = '/login'; return; }		
         
         if (!userData.username) {
           showError('Not logged in. Redirecting...');
-          setTimeout(() => window.location.href = 'login.html', 2000);
+          setTimeout(() => window.location.href = '/login', 2000);
           return false;
         }
         
         if (userData.role !== 'admin' && userData.username !== 'admin') {
           showError('Access denied. Admin privileges required.');
-          setTimeout(() => window.location.href = 'homepage.html', 2000);
+          setTimeout(() => window.location.href = '/app', 2000);
           return false;
         }
         
@@ -1037,7 +1038,7 @@
       } catch (error) {
         console.error('Error checking admin permissions:', error);
         showError('Unable to verify admin permissions');
-        setTimeout(() => window.location.href = 'homepage.html', 2000);
+        setTimeout(() => window.location.href = '/app', 2000);
         return false;
       }
     }

@@ -539,6 +539,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+
+<script>
+fetch('/api/current-user').then(r=>r.json()).then(user=>{
+  if(!user||!user.username){window.location.href='/login';return;}
+  if(user.plan==='trial'){window.location.href='/app';}
+});
+</script>	
+
 </head>
 <body>
     <div class="bg-shapes">

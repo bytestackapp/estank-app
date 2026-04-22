@@ -1191,6 +1191,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	try {
 		const response = await fetch('/api/current-user');
 		const user = await response.json();
+		if (!user || !user.username) { window.location.href = '/login'; return; }
 		
 		// Show admin card only for admin users
 		if (user && (user.role === 'admin' || user.username === 'admin')) {
