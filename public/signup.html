@@ -425,14 +425,14 @@
     <div class="modal-body">
       <div id="trialAlert" class="alert" style="margin-bottom:12px;"></div>
       <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:12px;">
-        You are about to activate a <strong>3-day free trial</strong>. Your login credentials will be sent to:
+        You are about to activate a <strong>1-day free trial</strong>. Your login credentials will be sent to:
       </p>
       <div style="background:#f4f6fb;border:1px solid #e2e7f0;border-radius:8px;padding:12px 14px;margin-bottom:12px;">
         <div style="font-size:12px;color:#666;margin-bottom:2px;">Email</div>
         <div style="font-weight:700;color:#1e3c72;" id="trialEmailDisplay"></div>
       </div>
       <div style="background:#fff8e8;border:1px solid #f59e0b;border-radius:8px;padding:12px 14px;font-size:13px;color:#b45309;">
-        ⚠️ <strong>Limited Trial Access:</strong> Shell, Base, and Tertiary modules only. Export MTO and key outputs are locked.
+        ⚠️ <strong>Limited Trial Access:</strong> Some features are limited, locked, or unavailable.
       </div>
     </div>
     <div class="modal-foot">
@@ -449,9 +449,7 @@
 <script>
 /* ── Redirect if already logged in ──────────────────────────── */
 (function() {
-  fetch('/api/current-user').then(r=>r.json()).then(u=>{
-    if(u && u.username) window.location.href = '/app';
-  });
+  fetch('/api/current-user').then(r=>r.json()).then(u=>{ if(u && u.username) window.location.href='/app'; });
 })();
 
 /* ── State ───────────────────────────────────────────────────── */
@@ -577,14 +575,13 @@ async function goStep2() {
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking…';
 
   try {
-    const checkRes = await fetch('/api/check-availability', {
+    const chkRes = await fetch('/api/check-availability', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, username })
     });
-    const checkData = await checkRes.json();
-    const existEmail = checkData.emailTaken;
-    const existUser  = checkData.usernameTaken;
+    const chkData = await chkRes.json();
+    const [existEmail, existUser] = [chkData.emailTaken, chkData.usernameTaken];
     if (existEmail) { fieldErr('signupEmail', 'This email is already registered.'); btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>'; return; }
     if (existUser)  { fieldErr('signupUsername', 'This username is already taken.'); btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>'; return; }
   } catch(e) {
@@ -623,37 +620,10 @@ function selectPkg(pkg) {
 async function doSubmit() {
   if (!selectedPackage) { showAlert('step2Alert', 'Please select a package.'); return; }
   clearAlert('step2Alert');
-  setLoading('submitBtn', 'submitSpinner', 'submitBtnText', true);
-
-  try {
-    const res = await fetch('/api/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName: formData.firstName,
-        lastName:  formData.lastName,
-        email:     formData.email,
-        username:  formData.username,
-        password:  formData.password,
-        package:   selectedPackage
-      })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      showSuccess(
-        '✅',
-        'Request Submitted!',
-        `Thank you, <strong>${formData.firstName}</strong>! Your signup request has been submitted. We'll review it and send you an approval email at <strong>${formData.email}</strong>.`
-      );
-    } else {
-      showAlert('step2Alert', data.message || 'An error occurred. Please try again.');
-      setLoading('submitBtn', 'submitSpinner', 'submitBtnText', false);
-    }
-  } catch(e) {
-    showAlert('step2Alert', 'An error occurred. Please try again.');
-    setLoading('submitBtn', 'submitSpinner', 'submitBtnText', false);
-  }
+  // Save to sessionStorage and go to payment page
+  sessionStorage.setItem('signup_formData', JSON.stringify(formData));
+  sessionStorage.setItem('signup_package', selectedPackage);
+  window.location.href = '/payment';
 }
 
 /* ── Free trial ──────────────────────────────────────────────── */
@@ -717,7 +687,9 @@ async function doRFQ() {
     await fetch('/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: formData.fullName, email: formData.email, message, company: document.getElementById('rfqCompany')?.value || '', users: document.getElementById('rfqUsers')?.value || '' })
+      body: JSON.stringify({ name: formData.fullName, email: formData.email, message,
+        company: document.getElementById('rfqCompany')?.value||'',
+        users: document.getElementById('rfqUsers')?.value||'' })
     });
 
     closeModal('rfqModal');
