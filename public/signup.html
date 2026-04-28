@@ -449,7 +449,7 @@
 <script>
 /* ── Redirect if already logged in ──────────────────────────── */
 (function() {
-  fetch('/api/current-user').then(r=>r.json()).then(u=>{ if(u && u.username) window.location.href='/app'; });
+  // Signup page is open to all - no redirect
 })();
 
 /* ── State ───────────────────────────────────────────────────── */
