@@ -696,6 +696,30 @@
         width: 200px;
       }
     }
+  
+    /* Trial locked cards */
+    .trial-lock-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e53e3e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.05em;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .estimator-card.trial-locked-clickable {
+      opacity: 0.55;
+      position: relative;
+    }
+    .estimator-card.trial-locked-clickable:hover {
+      opacity: 0.7;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -1180,7 +1204,7 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmLogoutBtn.addEventListener('click', function() {
       console.log('User logged out');
       localStorage.removeItem('currentUser');
-      fetch('/api/logout').then(() => { window.location.href = '/login'; });
+      window.location.href = 'login.html';
     });
   }
 
@@ -1191,7 +1215,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	try {
 		const response = await fetch('/api/current-user');
 		const user = await response.json();
-		if (!user || !user.username) { window.location.href = '/login'; return; }
 		
 		// Show admin card only for admin users
 		if (user && (user.role === 'admin' || user.username === 'admin')) {
@@ -1200,10 +1223,42 @@ document.addEventListener('DOMContentLoaded', function() {
 			adminCard.style.display = "block";
 		}
 		}
+
+		// Lock modules for free trial users
+		if (user && user.plan === 'trial' && !user.isExpired) {
+			const lockedModules = ['roof.html', 'saddle.html', 'nozzle.html', 'rafter.html', 'misc.html'];
+			document.querySelectorAll('.estimator-card').forEach(function(card) {
+				var href = card.getAttribute('href') || '';
+				var isLocked = lockedModules.some(function(m) { return href.includes(m); });
+				if (isLocked) {
+					var badge = document.createElement('div');
+					badge.className = 'trial-lock-badge';
+					badge.innerHTML = '🔒 LOCKED';
+					card.style.position = 'relative';
+					card.appendChild(badge);
+					card.classList.add('trial-locked-clickable');
+					card.addEventListener('click', function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+						document.getElementById('trialUpgradeModal').style.display = 'flex';
+					});
+				}
+			});
+		}
 	} catch (err) {
 		console.error("Error checking user role:", err);
 	}
 	});
   </script>
+
+  <div id="trialUpgradeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <h2 style="color:#2d3748;margin-bottom:8px;">Paid Feature</h2>
+      <p style="color:#718096;margin-bottom:24px;">This module is only available on paid plans. Upgrade to unlock all estimator modules.</p>
+      <a href="/signup" style="display:inline-block;padding:12px 28px;background:#3182ce;color:#fff;text-decoration:none;border-radius:8px;font-weight:500;margin-bottom:12px;">Upgrade Now</a><br>
+      <button onclick="document.getElementById('trialUpgradeModal').style.display='none';" style="background:none;border:none;color:#a0aec0;cursor:pointer;font-size:14px;margin-top:8px;">Maybe later</button>
+    </div>
+  </div>
 </body>
 </html>
