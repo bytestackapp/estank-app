@@ -575,7 +575,7 @@ async function goStep2() {
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking…';
 
   try {
-    const chkRes = await fetch('/api/check-availability', {
+    const chkRes = await fetch('/api/signup/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, username })
@@ -684,7 +684,7 @@ async function doRFQ() {
   setLoading('rfqBtn', 'rfqSpinner', 'rfqBtnText', true);
 
   try {
-    await fetch('/api/contact', {
+    await fetch('/api/signup/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: formData.fullName, email: formData.email, message,
