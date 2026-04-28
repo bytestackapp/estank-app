@@ -6,6 +6,7 @@
   ],
   "routes": [
     { "src": "/api/users/(.*)", "dest": "/api/users.js?action=$1" },
+    { "src": "/api/signup/(.*)", "dest": "/api/signup.js?action=$1" },
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/login", "dest": "/public/login.html" },
     { "src": "/signup", "dest": "/public/signup.html" },
