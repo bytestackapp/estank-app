@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!--
 ═══════════════════════════════════════════════════════════════════════════════
-    TANK MTO ESTIMATOR SUITE — Sign Up
-    © Bytestack 2025. All Rights Reserved.
+    STORM DRAINAGE CALCULATOR — Sign Up
+    © ByteStack Labs 2025. All Rights Reserved.
+    Version: 2.0.0
 ═══════════════════════════════════════════════════════════════════════════════
 -->
 <html lang="en">
@@ -11,40 +12,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign Up — Tank MTO Estimator Suite</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <script defer src="/_vercel/insights/script.js"></script>
   <style>
     :root {
-      --primary: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
-      --primary-solid: #2b6cb0;
-      --text-primary: #1a202c;
+      --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --text-primary: #2d3748;
       --text-secondary: #4a5568;
       --text-light: #718096;
-      --bg-card: rgba(255,255,255,0.98);
-      --shadow: 0 20px 25px -5px rgba(0,0,0,0.15), 0 10px 10px -5px rgba(0,0,0,0.06);
+      --bg-card: rgba(255,255,255,0.97);
+      --shadow: 0 20px 25px -5px rgba(0,0,0,0.12), 0 10px 10px -5px rgba(0,0,0,0.05);
       --radius: 16px;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 50%, #63b3ed 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
       min-height:100vh; display:flex; align-items:center;
       justify-content:center; padding:1.5rem 1rem; color:var(--text-primary);
     }
     .bg-shapes { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-    .shape { position:absolute; border-radius:50%; background:rgba(255,255,255,0.06); animation:float 8s ease-in-out infinite; }
-    .shape:nth-child(1){width:160px;height:160px;top:10%;left:8%;animation-delay:0s;}
-    .shape:nth-child(2){width:100px;height:100px;top:60%;right:12%;animation-delay:2s;}
-    .shape:nth-child(3){width:70px;height:70px;top:25%;right:8%;animation-delay:4s;}
-    .shape:nth-child(4){width:120px;height:120px;bottom:12%;left:18%;animation-delay:1s;}
-    .shape:nth-child(5){width:50px;height:50px;top:45%;left:5%;animation-delay:3s;}
+    .shape { position:absolute; border-radius:50%; background:rgba(255,255,255,0.07); animation:float 8s ease-in-out infinite; }
+    .shape:nth-child(1){width:140px;height:140px;top:12%;left:10%;animation-delay:0s;}
+    .shape:nth-child(2){width:90px;height:90px;top:65%;right:15%;animation-delay:2s;}
+    .shape:nth-child(3){width:60px;height:60px;top:30%;right:10%;animation-delay:4s;}
+    .shape:nth-child(4){width:110px;height:110px;bottom:15%;left:20%;animation-delay:1s;}
     @keyframes float{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-20px) rotate(5deg);}}
 
-    .container { position:relative; z-index:1; width:100%; max-width:540px; }
-
-    .brand { text-align:center; margin-bottom:1.5rem; }
-    .brand-icon { font-size:2rem; margin-bottom:6px; }
-    .brand-name { font-size:1.1rem; font-weight:700; color:#fff; letter-spacing:0.02em; }
-    .brand-sub { font-size:0.8rem; color:rgba(255,255,255,0.7); }
+    .container { position:relative; z-index:1; width:100%; max-width:520px; }
 
     .card {
       background:var(--bg-card); border-radius:var(--radius);
@@ -53,32 +46,38 @@
     }
     @keyframes slideUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
 
-    /* ── Step indicator ── */
-    .steps { display:flex; align-items:center; justify-content:center; margin-bottom:2rem; gap:0; }
-    .step { display:flex; flex-direction:column; align-items:center; gap:6px; }
+    /* ── Step indicator ──────────────────────────────────────── */
+    .steps {
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:2rem; gap:0;
+    }
+    .step {
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
     .step-circle {
       width:36px; height:36px; border-radius:50%;
       display:flex; align-items:center; justify-content:center;
       font-size:14px; font-weight:700; transition:all 0.3s;
       border:2px solid #e2e8f0; background:#fff; color:#aaa;
     }
-    .step.active .step-circle { background:var(--primary) !important; border-color:transparent; color:#fff; box-shadow:0 4px 12px rgba(43,108,176,0.35); }
-    .step.done .step-circle   { background:#38a169; border-color:transparent; color:#fff; }
+    .step.active .step-circle  { background:var(--primary) !important; border-color:transparent; color:#fff; box-shadow:0 4px 12px rgba(30,60,114,0.35); }
+    .step.done .step-circle    { background:#1e8a4a; border-color:transparent; color:#fff; }
     .step-label { font-size:11px; font-weight:600; color:#aaa; text-transform:uppercase; letter-spacing:0.05em; }
-    .step.active .step-label  { color:#1a365d; }
-    .step.done .step-label    { color:#38a169; }
+    .step.active .step-label   { color:#1e3c72; }
+    .step.done .step-label     { color:#1e8a4a; }
     .step-line { flex:1; height:2px; background:#e2e8f0; margin:0 8px; margin-bottom:22px; transition:background 0.3s; min-width:40px; }
-    .step-line.done { background:#38a169; }
+    .step-line.done { background:#1e8a4a; }
 
-    /* ── Panel ── */
+    /* ── Panel ───────────────────────────────────────────────── */
     .panel { display:none; }
     .panel.active { display:block; animation:fadeIn 0.3s ease; }
     @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 
-    .panel-title { font-size:1.4rem; font-weight:700; color:#1a365d; margin-bottom:4px; }
+    /* ── Header ──────────────────────────────────────────────── */
+    .panel-title { font-size:1.4rem; font-weight:700; color:#1e3c72; margin-bottom:4px; }
     .panel-sub   { font-size:0.875rem; color:var(--text-light); margin-bottom:1.5rem; }
 
-    /* ── Form ── */
+    /* ── Form ────────────────────────────────────────────────── */
     .form-group { margin-bottom:1rem; }
     .form-label { display:block; margin-bottom:0.4rem; font-size:0.875rem; font-weight:600; color:var(--text-secondary); }
     .form-input {
@@ -87,37 +86,37 @@
       font-size:0.93rem; transition:all 0.25s;
       background:#fff; color:var(--text-primary); font-family:inherit;
     }
-    .form-input:focus { outline:none; border-color:#2b6cb0; box-shadow:0 0 0 3px rgba(43,108,176,0.12); }
+    .form-input:focus { outline:none; border-color:#2a5298; box-shadow:0 0 0 3px rgba(42,82,152,0.12); }
     .form-input.error { border-color:#dc3545; }
     .field-err { font-size:12px; color:#dc3545; margin-top:4px; display:none; }
     .field-err.show { display:block; }
 
     .pw-wrap { position:relative; }
     .pw-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-light); font-size:1rem; }
-    .pw-toggle:hover { color:#2b6cb0; }
+    .pw-toggle:hover { color:#2a5298; }
 
     .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
-    /* ── Alert ── */
+    /* ── Alert ───────────────────────────────────────────────── */
     .alert { border-radius:10px; padding:0.75rem 1rem; font-size:0.875rem; margin-bottom:1rem; display:none; }
     .alert.show { display:block; animation:fadeIn 0.3s; }
     .alert-error   { background:rgba(220,53,69,0.1);  border:1px solid rgba(220,53,69,0.3);  color:#dc3545; }
-    .alert-success { background:rgba(56,161,105,0.1);  border:1px solid rgba(56,161,105,0.3);  color:#38a169; }
-    .alert-info    { background:rgba(43,108,176,0.08); border:1px solid rgba(43,108,176,0.2);  color:#1a365d; }
+    .alert-success { background:rgba(30,138,74,0.1);  border:1px solid rgba(30,138,74,0.3);  color:#1e8a4a; }
+    .alert-info    { background:rgba(30,60,114,0.08); border:1px solid rgba(30,60,114,0.2);  color:#1e3c72; }
     .alert-warning { background:rgba(201,112,0,0.1);  border:1px solid rgba(201,112,0,0.3);  color:#c97000; }
 
-    /* ── Buttons ── */
+    /* ── Buttons ─────────────────────────────────────────────── */
     .btn {
       padding:0.875rem 1.5rem; border:none; border-radius:10px;
       font-size:0.95rem; font-weight:600; cursor:pointer;
       transition:all 0.3s; font-family:inherit;
       display:inline-flex; align-items:center; justify-content:center; gap:0.5rem;
     }
-    .btn-primary { background:var(--primary); color:#fff; box-shadow:0 4px 14px rgba(43,108,176,0.3); }
-    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(43,108,176,0.4); }
+    .btn-primary { background:var(--primary); color:#fff; box-shadow:0 4px 14px rgba(30,60,114,0.3); }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(30,60,114,0.4); }
     .btn-primary:disabled { opacity:0.7; cursor:not-allowed; transform:none; }
-    .btn-outline { background:#fff; color:#1a365d; border:2px solid #e2e8f0; }
-    .btn-outline:hover { border-color:#2b6cb0; background:#f0f4ff; }
+    .btn-outline { background:#fff; color:#1e3c72; border:2px solid #e2e8f0; }
+    .btn-outline:hover { border-color:#2a5298; background:#f0f4ff; }
     .btn-full { width:100%; }
     .btn-row { display:flex; gap:10px; margin-top:1.25rem; }
 
@@ -125,7 +124,7 @@
     .spinner.on { display:inline-block; }
     @keyframes spin{to{transform:rotate(360deg);}}
 
-    /* ── Package cards ── */
+    /* ── Package cards ───────────────────────────────────────── */
     .packages { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:1.25rem; }
     @media(max-width:480px){ .packages{ grid-template-columns:1fr; } }
 
@@ -134,24 +133,21 @@
       cursor:pointer; transition:all 0.25s; text-align:center;
       position:relative; background:#fff;
     }
-    .pkg-card:hover { border-color:#2b6cb0; background:#f8fbff; transform:translateY(-2px); }
-    .pkg-card.selected { border-color:#2b6cb0; background:linear-gradient(135deg,#eef4ff,#e8f0ff); box-shadow:0 4px 16px rgba(43,108,176,0.15); }
-    .pkg-card.selected::after { content:'✓'; position:absolute; top:8px; right:10px; color:#2b6cb0; font-weight:700; font-size:14px; }
-    .pkg-card.popular { border-color:#2b6cb0; }
-    .pkg-popular-badge { position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:#2b6cb0; color:#fff; font-size:9px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; text-transform:uppercase; letter-spacing:0.05em; }
+    .pkg-card:hover { border-color:#2a5298; background:#f8fbff; transform:translateY(-2px); }
+    .pkg-card.selected { border-color:#2a5298; background:linear-gradient(135deg,#eef4ff,#e8f0ff); box-shadow:0 4px 16px rgba(42,82,152,0.15); }
+    .pkg-card.selected::after { content:'✓'; position:absolute; top:8px; right:10px; color:#2a5298; font-weight:700; font-size:14px; }
 
     .pkg-badge { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; padding:3px 8px; border-radius:20px; margin-bottom:8px; }
-    .pkg-badge.monthly  { background:rgba(43,108,176,0.1);  color:#1a365d; }
-    .pkg-badge.yearly   { background:rgba(56,161,105,0.12); color:#276749; }
-    .pkg-badge.premium  { background:rgba(201,112,0,0.12);  color:#c97000; }
+    .pkg-badge.basic   { background:rgba(30,60,114,0.1);  color:#1e3c72; }
+    .pkg-badge.pro     { background:rgba(42,82,152,0.15); color:#2a5298; }
+    .pkg-badge.premium { background:rgba(201,112,0,0.12); color:#c97000; }
 
-    .pkg-price { font-size:22px; font-weight:800; color:#1a365d; line-height:1; margin-bottom:2px; }
+    .pkg-price { font-size:22px; font-weight:800; color:#1e3c72; line-height:1; margin-bottom:2px; }
     .pkg-period { font-size:11px; color:var(--text-light); margin-bottom:8px; }
-    .pkg-name { font-size:13px; font-weight:700; color:#1a365d; margin-bottom:6px; }
+    .pkg-name { font-size:13px; font-weight:700; color:#1e3c72; margin-bottom:6px; }
     .pkg-features { font-size:11px; color:var(--text-light); line-height:1.6; }
-    .pkg-savings { font-size:10px; color:#38a169; font-weight:600; margin-top:4px; }
 
-    /* ── Other options ── */
+    /* ── Other options ───────────────────────────────────────── */
     .other-opts { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem; }
     @media(max-width:480px){ .other-opts{ grid-template-columns:1fr; } }
 
@@ -159,134 +155,149 @@
       border:2px solid #e2e8f0; border-radius:12px; padding:14px 12px;
       cursor:pointer; transition:all 0.25s; text-align:center; background:#fff;
     }
-    .opt-card:hover { border-color:#2b6cb0; background:#f8fbff; transform:translateY(-2px); }
+    .opt-card:hover { border-color:#2a5298; background:#f8fbff; transform:translateY(-2px); }
     .opt-icon { font-size:22px; margin-bottom:6px; }
-    .opt-title { font-size:13px; font-weight:700; color:#1a365d; margin-bottom:3px; }
+    .opt-title { font-size:13px; font-weight:700; color:#1e3c72; margin-bottom:3px; }
     .opt-sub { font-size:11px; color:var(--text-light); }
 
-    .section-divider { display:flex; align-items:center; gap:10px; margin:1rem 0 0.75rem; }
-    .section-divider span { font-size:11px; font-weight:600; color:#aaa; text-transform:uppercase; letter-spacing:0.06em; white-space:nowrap; }
-    .section-divider::before, .section-divider::after { content:''; flex:1; height:1px; background:#e2e8f0; }
-
-    /* ── Back link ── */
-    .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:#2b6cb0; font-size:0.875rem; cursor:pointer; border:none; background:none; font-family:inherit; margin-bottom:1.25rem; padding:0; font-weight:600; }
+    /* ── Back link ───────────────────────────────────────────── */
+    .back-link { display:inline-flex; align-items:center; gap:0.4rem; color:#2a5298; font-size:0.875rem; cursor:pointer; border:none; background:none; font-family:inherit; margin-bottom:1.25rem; padding:0; font-weight:600; }
     .back-link:hover { text-decoration:underline; }
 
-    /* ── Login link ── */
+    /* ── Login link ──────────────────────────────────────────── */
     .login-row { text-align:center; margin-top:1.25rem; font-size:0.875rem; color:var(--text-light); }
-    .login-row button { background:none; border:none; color:#2b6cb0; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.875rem; }
+    .login-row button { background:none; border:none; color:#2a5298; font-weight:600; cursor:pointer; font-family:inherit; font-size:0.875rem; }
     .login-row button:hover { text-decoration:underline; }
 
-    /* ── Success panel ── */
-    .success-icon { font-size:4rem; text-align:center; margin-bottom:1rem; }
-    .success-title { font-size:1.5rem; font-weight:700; color:#1a365d; text-align:center; margin-bottom:0.5rem; }
-    .success-msg { font-size:0.9rem; color:var(--text-light); text-align:center; margin-bottom:1.5rem; line-height:1.6; }
-    .success-box { background:#f0fff4; border:1px solid #c6f6d5; border-radius:10px; padding:1rem; margin-bottom:1.5rem; }
-    .success-box p { font-size:0.875rem; color:#276749; }
-
-    /* ── Modal ── */
+    /* ── Modal ───────────────────────────────────────────────── */
     .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; padding:1rem; }
     .modal.open { display:flex; animation:fadeIn 0.2s; }
-    .modal-box { background:#fff; border-radius:var(--radius); width:100%; max-width:420px; box-shadow:0 20px 50px rgba(0,0,0,0.25); overflow:hidden; animation:slideUp 0.3s ease; }
+    .modal-box { background:#fff; border-radius:var(--radius); width:100%; max-width:460px; box-shadow:0 20px 50px rgba(0,0,0,0.25); overflow:hidden; animation:slideUp 0.3s ease; }
     .modal-head { display:flex; justify-content:space-between; align-items:center; padding:1.1rem 1.5rem; border-bottom:1px solid #e2e8f0; }
-    .modal-head h3 { font-size:1rem; font-weight:700; color:#1a365d; }
+    .modal-head h3 { font-size:1rem; font-weight:700; color:#1e3c72; }
     .modal-x { background:rgba(220,53,69,0.1); border:none; color:#dc3545; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
     .modal-x:hover { background:rgba(220,53,69,0.2); transform:rotate(90deg); }
     .modal-body { padding:1.3rem 1.5rem; }
     .modal-foot { padding:0.9rem 1.5rem; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px; }
-    .btn-ok  { background:var(--primary); color:#fff; border:none; border-radius:8px; padding:0.55rem 1.2rem; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit; display:inline-flex; align-items:center; gap:6px; }
-    .btn-sec { background:#f4f6fb; color:#1a365d; border:1.5px solid #e2e8f0; border-radius:8px; padding:0.55rem 1.2rem; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit; }
+    .btn-ok  { background:var(--primary); color:#fff; border:none; border-radius:8px; padding:0.55rem 1.2rem; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit; }
+    .btn-sec { background:#f4f6fb; color:#1e3c72; border:1.5px solid #e2e8f0; border-radius:8px; padding:0.55rem 1.2rem; font-size:0.875rem; font-weight:600; cursor:pointer; font-family:inherit; }
 
-    input::-ms-reveal, input::-ms-clear,
-    input::-webkit-credentials-auto-fill-button,
-    input::-webkit-textfield-decoration-container { display:none !important; }
-  </style>
+    .rfq-label { display:block; margin-bottom:0.4rem; font-size:0.875rem; font-weight:600; color:var(--text-secondary); }
+    .rfq-input { width:100%; padding:0.72rem 1rem; border:2px solid #e2e8f0; border-radius:10px; font-size:0.875rem; font-family:inherit; margin-bottom:12px; }
+    .rfq-input:focus { outline:none; border-color:#2a5298; box-shadow:0 0 0 3px rgba(42,82,152,0.1); }
+    textarea.rfq-input { resize:vertical; min-height:100px; }
+
+	input::-ms-reveal,
+	input::-ms-clear,
+	input::-webkit-credentials-auto-fill-button,
+	input::-webkit-textfield-decoration-container { display:none !important; }
+
+    .tooltip-msg {
+      position:fixed;
+      top:2rem;
+      left:50%;
+      transform:translateX(-50%) translateY(-20px);
+      background:#1e3c72;
+      color:#fff;
+      padding:10px 20px;
+      border-radius:10px;
+      font-size:13px;
+      font-weight:600;
+      box-shadow:0 8px 24px rgba(0,0,0,0.2);
+      z-index:99999;
+      opacity:0;
+      transition:all 0.3s ease;
+      white-space:nowrap;
+      pointer-events:none;
+    }
+    .tooltip-msg.show {
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+    .tooltip-msg.warning { background:#c97000; }
+    .tooltip-msg.error   { background:#dc3545; }
+    .tooltip-msg.success { background:#1e8a4a; }	
+	
+	</style>
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
-
 <div class="bg-shapes">
   <div class="shape"></div><div class="shape"></div>
-  <div class="shape"></div><div class="shape"></div><div class="shape"></div>
+  <div class="shape"></div><div class="shape"></div>
 </div>
 
 <div class="container">
-
-  <div class="brand">
-    <div class="brand-icon">🛢️</div>
-    <div class="brand-name">Tank MTO Estimator Suite</div>
-    <div class="brand-sub">by Bytestack</div>
-  </div>
-
   <div class="card">
 
-    <!-- Step Indicator -->
+    <!-- ── Step indicator ──────────────────────────────────── -->
     <div class="steps">
-      <div class="step active" id="step1Ind">
-        <div class="step-circle">1</div>
-        <div class="step-label">Details</div>
+      <div class="step active" style="margin-left:80px;" id="step1Ind">
+        <div class="step-circle" id="step1Circle">1</div>
+        <div class="step-label">Your Info</div>
       </div>
-      <div class="step-line" id="line1"></div>
-      <div class="step active" id="step2Ind">
-        <div class="step-circle">2</div>
+      <div class="step-line" id="stepLine"></div>
+      <div class="step" style="margin-right:80px;" id="step2Ind">
+        <div class="step-circle" id="step2Circle">2</div>
         <div class="step-label">Package</div>
       </div>
     </div>
 
-    <!-- STEP 1: Account Details -->
-    <div class="panel active" id="panelStep1">
-      <div class="panel-title">Create your account</div>
-      <div class="panel-sub">Fill in your details to get started</div>
-
-      <div id="step1Alert" class="alert"></div>
+    <!-- ══════════════════════════════════════
+         STEP 1: ACCOUNT INFO
+    ══════════════════════════════════════ -->
+    <div id="panelStep1" class="panel active">
+      <div class="panel-title">Create Your Account</div>
+      <p class="panel-sub">Fill in your details to get started</p>
 
       <div class="row2">
         <div class="form-group">
-          <label class="form-label">First Name</label>
-          <input type="text" id="signupFirstName" class="form-input" placeholder="Juan" required>
-          <div class="field-err" id="errFirstName"></div>
+          <label class="form-label">First Name <span style="color:#dc3545;">*</span></label>
+          <input id="firstName" class="form-input" placeholder="Juan"/>
+          <div class="field-err" id="err_firstName"></div>
         </div>
         <div class="form-group">
-          <label class="form-label">Last Name</label>
-          <input type="text" id="signupLastName" class="form-input" placeholder="dela Cruz" required>
-          <div class="field-err" id="errLastName"></div>
+          <label class="form-label">Last Name <span style="color:#dc3545;">*</span></label>
+          <input id="lastName" class="form-input" placeholder="dela Cruz"/>
+          <div class="field-err" id="err_lastName"></div>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Email Address</label>
-        <input type="email" id="signupEmail" class="form-input" placeholder="juan@company.com" required>
-        <div class="field-err" id="errEmail"></div>
+        <label class="form-label">Email Address <span style="color:#dc3545;">*</span></label>
+        <input id="signupEmail" class="form-input" type="email" placeholder="juan@example.com"/>
+        <div class="field-err" id="err_email"></div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Username</label>
-        <input type="text" id="signupUsername" class="form-input" placeholder="juandelacruz" required autocomplete="off">
-        <div class="field-err" id="errUsername"></div>
+        <label class="form-label">Username <span style="color:#dc3545;">*</span></label>
+        <input id="signupUsername" class="form-input" placeholder="juandelacruz" autocomplete="off"/>
+        <div class="field-err" id="err_username"></div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Password</label>
+        <label class="form-label">Password <span style="color:#dc3545;">*</span></label>
         <div class="pw-wrap">
-          <input type="password" id="signupPassword" class="form-input" placeholder="Min. 6 characters" required autocomplete="new-password">
+          <input id="signupPassword" type="password" class="form-input" placeholder="Min. 8 characters"/>
           <button type="button" class="pw-toggle" onclick="togglePwd('signupPassword','pwIcon1')">
-            <i class="fa-regular fa-eye" id="pwIcon1"></i>
+            <i id="pwIcon1" class="fa-solid fa-eye"></i>
           </button>
         </div>
-        <div class="field-err" id="errPassword"></div>
+        <div class="field-err" id="err_password"></div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Confirm Password</label>
+        <label class="form-label">Confirm Password <span style="color:#dc3545;">*</span></label>
         <div class="pw-wrap">
-          <input type="password" id="signupConfirm" class="form-input" placeholder="Repeat your password" required autocomplete="new-password">
+          <input id="signupConfirm" type="password" class="form-input" placeholder="Re-enter your password"/>
           <button type="button" class="pw-toggle" onclick="togglePwd('signupConfirm','pwIcon2')">
-            <i class="fa-regular fa-eye" id="pwIcon2"></i>
+            <i id="pwIcon2" class="fa-solid fa-eye"></i>
           </button>
         </div>
-        <div class="field-err" id="errConfirm"></div>
+        <div class="field-err" id="err_confirm"></div>
       </div>
 
-      <button type="button" class="btn btn-primary btn-full" style="margin-top:10px;" id="nextBtn" onclick="goStep2()">
+	  <button type="button" class="btn btn-primary btn-full" style="margin-top:10px;"id="nextBtn" onclick="goStep2()">
         Next <i class="fa-solid fa-arrow-right"></i>
       </button>
 
@@ -295,109 +306,134 @@
       </div>
     </div>
 
-    <!-- STEP 2: Package Selection -->
-    <div class="panel" id="panelStep2">
+    <!-- ══════════════════════════════════════
+         STEP 2: PACKAGE SELECTION
+    ══════════════════════════════════════ -->
+    <div id="panelStep2" class="panel">
       <button class="back-link" onclick="goBack()">
         <i class="fa-solid fa-arrow-left"></i> Back
       </button>
 
       <div class="panel-title">Choose Your Plan</div>
-      <div class="panel-sub">Select the package that fits your needs. Payment processed via Gumroad.</div>
+      <p class="panel-sub">Select the package that fits your needs</p>
 
       <div id="step2Alert" class="alert"></div>
 
       <!-- Paid packages -->
       <div class="packages">
-        <div class="pkg-card" id="pkg_monthly" onclick="selectPkg('monthly')">
-          <div class="pkg-badge monthly">Monthly</div>
-          <div class="pkg-price">$15</div>
+        <div class="pkg-card" id="pkg_basic" onclick="selectPkg('basic')">
+          <div class="pkg-badge basic">Basic</div>
+          <div class="pkg-price">$8</div>
           <div class="pkg-period">per month</div>
-          <div class="pkg-name">Monthly Plan</div>
-          <div class="pkg-features">Full access<br/>All modules<br/>Email support</div>
+          <div class="pkg-name">Starter Plan</div>
+          <div class="pkg-features">Full calculator access<br/>Unlimited projects<br/>PDF export<br/>Email support</div>
         </div>
-
-        <div class="pkg-card popular" id="pkg_yearly" onclick="selectPkg('yearly')">
-          <div class="pkg-popular-badge">⭐ Best Value</div>
-          <div class="pkg-badge yearly">Yearly</div>
-          <div class="pkg-price">$120</div>
+        <div class="pkg-card" id="pkg_pro" onclick="selectPkg('pro')">
+          <div class="pkg-badge pro">Pro</div>
+          <div class="pkg-price">$90</div>
           <div class="pkg-period">per year</div>
-          <div class="pkg-name">Yearly Basic</div>
-          <div class="pkg-features">Full access<br/>All modules<br/>Priority support</div>
-          <div class="pkg-savings">Save 33% vs monthly</div>
+          <div class="pkg-name">Professional</div>
+          <div class="pkg-features">Everything in Basic<br/>Priority support<br/>Early features<br/>Save 25%</div>
         </div>
-
         <div class="pkg-card" id="pkg_premium" onclick="selectPkg('premium')">
           <div class="pkg-badge premium">Premium</div>
-          <div class="pkg-price">$180</div>
+          <div class="pkg-price">$100</div>
           <div class="pkg-period">per year</div>
-          <div class="pkg-name">Yearly Premium</div>
-          <div class="pkg-features">Everything in Yearly<br/>1-year support<br/>Free updates</div>
-          <div class="pkg-savings">Best for teams</div>
+          <div class="pkg-name">Enterprise</div>
+          <div class="pkg-features">Everything in Pro<br/>Dedicated support<br/>Free updates<br/>Custom requests</div>
         </div>
       </div>
-
-      <div class="section-divider"><span>or try first</span></div>
 
       <!-- Other options -->
       <div class="other-opts">
         <div class="opt-card" onclick="doFreeTrial()">
-          <div class="opt-icon">🎁</div>
+          <div class="opt-icon">🆓</div>
           <div class="opt-title">Free Trial</div>
-          <div class="opt-sub">3 days · Limited access<br/>No credit card needed</div>
+          <div class="opt-sub">1-day access, no payment needed</div>
         </div>
-        <div class="opt-card" onclick="doRFQ()">
-          <div class="opt-icon">💬</div>
-          <div class="opt-title">Request a Quote</div>
-          <div class="opt-sub">Custom pricing<br/>For teams & enterprises</div>
+        <div class="opt-card" onclick="openRFQ()">
+          <div class="opt-icon">📋</div>
+          <div class="opt-title">Request Quotation</div>
+          <div class="opt-sub">Talk to us about custom pricing</div>
         </div>
       </div>
 
-      <button class="btn btn-primary btn-full" id="submitBtn" onclick="doSubmit()">
-        <span class="spinner" id="submitSpinner"></span>
-        <span id="submitBtnText"><i class="fa-solid fa-paper-plane"></i> Submit Request</span>
-      </button>
-
-      <div class="login-row">
-        Already have an account? <button onclick="window.location.href='/login'">Sign In →</button>
+      <div id="selectedPkgRow" style="display:none;">
+        <button class="btn btn-primary btn-full" id="submitBtn" onclick="doSubmit()">
+          <span class="spinner" id="submitSpinner"></span>
+          <span id="submitBtnText"><i class="fa-solid fa-paper-plane"></i> Submit Request</span>
+        </button>
       </div>
     </div>
 
-    <!-- SUCCESS panel -->
-    <div class="panel" id="panelSuccess">
-      <div class="success-icon" id="successIcon">✅</div>
-      <div class="success-title" id="successTitle">Request Submitted!</div>
-      <div class="success-msg" id="successMsg">
-        Your signup request has been submitted. You will receive an email once your account is approved.
+    <!-- ══════════════════════════════════════
+         STEP 3: SUCCESS
+    ══════════════════════════════════════ -->
+    <div id="panelSuccess" class="panel">
+      <div style="text-align:center;padding:1rem 0;">
+        <div style="font-size:56px;margin-bottom:1rem;" id="successIcon">✅</div>
+        <h2 style="color:#1e3c72;font-size:1.4rem;margin-bottom:0.5rem;" id="successTitle">Request Submitted!</h2>
+        <p style="color:var(--text-light);font-size:0.9rem;line-height:1.7;margin-bottom:1.5rem;" id="successMsg">
+          Your signup request has been submitted. You will receive an email once your account is approved.
+        </p>
+        <button class="btn btn-primary" onclick="window.location.href='/login'">
+          <i class="fa-solid fa-right-to-bracket"></i> Go to Login
+        </button>
       </div>
-      <div class="success-box" id="successBox" style="display:none;">
-        <p id="successBoxText"></p>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="window.location.href='/login'">
-        <i class="fa-solid fa-arrow-right-to-bracket"></i> Go to Login
-      </button>
     </div>
 
+  </div><!-- /card -->
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════
+     RFQ MODAL
+══════════════════════════════════════ -->
+<div id="rfqModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>📋 Request for Quotation</h3>
+      <button class="modal-x" onclick="closeModal('rfqModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="rfqAlert" class="alert" style="margin-bottom:12px;"></div>
+      <label class="rfq-label">Full Name</label>
+      <input id="rfqName" class="rfq-input" readonly/>
+      <label class="rfq-label">Email</label>
+      <input id="rfqEmail" class="rfq-input" readonly/>
+      <label class="rfq-label">Message <span style="color:#dc3545;">*</span></label>
+      <textarea id="rfqMessage" class="rfq-input" placeholder="Tell us what you need, or request to arrange a meeting…"></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-sec" onclick="closeModal('rfqModal')">Cancel</button>
+      <button class="btn-ok" id="rfqBtn" onclick="doRFQ()">
+        <span class="spinner" id="rfqSpinner" style="border-top-color:#fff;"></span>
+        <span id="rfqBtnText">Send Inquiry</span>
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- Free Trial Confirm Modal -->
+<!-- ══════════════════════════════════════
+     FREE TRIAL CONFIRM MODAL
+══════════════════════════════════════ -->
 <div id="trialModal" class="modal">
   <div class="modal-box">
     <div class="modal-head">
-      <h3>🎁 Activate Free Trial</h3>
+      <h3>🆓 Free Trial</h3>
       <button class="modal-x" onclick="closeModal('trialModal')">×</button>
     </div>
     <div class="modal-body">
       <div id="trialAlert" class="alert" style="margin-bottom:12px;"></div>
-      <p style="font-size:0.875rem;color:#4a5568;margin-bottom:8px;">
+      <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;margin-bottom:12px;">
         You are about to activate a <strong>3-day free trial</strong>. Your login credentials will be sent to:
       </p>
-      <div style="background:#eef4ff;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
-        <div style="font-weight:700;color:#1a365d;" id="trialEmailDisplay"></div>
+      <div style="background:#f4f6fb;border:1px solid #e2e7f0;border-radius:8px;padding:12px 14px;margin-bottom:12px;">
+        <div style="font-size:12px;color:#666;margin-bottom:2px;">Email</div>
+        <div style="font-weight:700;color:#1e3c72;" id="trialEmailDisplay"></div>
       </div>
-      <p style="font-size:12px;color:#c97000;">
-        ⚠️ <strong>Limited Trial Access:</strong> Shell, Base, and Tertiary modules only. Some features are locked.
-      </p>
+      <div style="background:#fff8e8;border:1px solid #f59e0b;border-radius:8px;padding:12px 14px;font-size:13px;color:#b45309;">
+        ⚠️ <strong>Limited Trial Access:</strong> Shell, Base, and Tertiary modules only. Export MTO and key outputs are locked.
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn-sec" onclick="closeModal('trialModal')">Cancel</button>
@@ -409,288 +445,305 @@
   </div>
 </div>
 
-<!-- RFQ Modal -->
-<div id="rfqModal" class="modal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <h3>💬 Request a Quote</h3>
-      <button class="modal-x" onclick="closeModal('rfqModal')">×</button>
-    </div>
-    <div class="modal-body">
-      <div id="rfqAlert" class="alert" style="margin-bottom:12px;"></div>
-      <p style="font-size:0.875rem;color:#4a5568;margin-bottom:12px;">Tell us about your team's needs and we'll get back to you within 24 hours.</p>
-      <label class="form-label">Company / Organization</label>
-      <input type="text" id="rfqCompany" class="form-input" placeholder="ACME Corp" style="margin-bottom:12px;">
-      <label class="form-label">Number of Users</label>
-      <input type="number" id="rfqUsers" class="form-input" placeholder="e.g. 10" style="margin-bottom:12px;" min="1">
-      <label class="form-label">Message</label>
-      <textarea id="rfqMessage" class="form-input" placeholder="Tell us about your requirements..." style="resize:vertical;min-height:80px;"></textarea>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-sec" onclick="closeModal('rfqModal')">Cancel</button>
-      <button class="btn-ok" id="rfqBtn" onclick="doRFQ()">
-        <span class="spinner" id="rfqSpinner" style="border-top-color:#fff;"></span>
-        <span id="rfqBtnText"><i class="fa-solid fa-paper-plane"></i> Send Inquiry</span>
-      </button>
-    </div>
-  </div>
-</div>
-
+<script src="drainage_data.js"></script>
 <script>
-  let formData = {};
-  let selectedPackage = null;
+/* ── Redirect if already logged in ──────────────────────────── */
+(function() {
+  fetch('/api/current-user').then(r=>r.json()).then(u=>{
+    if(u && u.username) window.location.href = '/app';
+  });
+})();
 
-  // ── Utilities ──────────────────────────────────────────────────────
-  function showAlert(id, msg, type='error') {
-    const el = document.getElementById(id);
-    el.className = `alert alert-${type} show`;
-    el.innerHTML = msg;
-  }
-  function clearAlert(id) {
-    const el = document.getElementById(id);
-    el.className = 'alert';
-    el.innerHTML = '';
-  }
-  function fieldErr(id, msg) {
-    const input = document.getElementById(id);
-    const err = document.getElementById('err' + id.replace('signup','').replace(/^./, c => c.toUpperCase()));
-    if (input) input.classList.add('error');
-    if (err) { err.textContent = msg; err.classList.add('show'); }
-  }
-  function clearFieldErrs() {
-    document.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
-    document.querySelectorAll('.field-err').forEach(el => el.classList.remove('show'));
-  }
-  function togglePwd(id, iconId) {
-    const input = document.getElementById(id);
-    const icon = document.getElementById(iconId);
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'fa-regular fa-eye-slash';
+/* ── State ───────────────────────────────────────────────────── */
+let selectedPackage = null;
+let formData = {};
+
+/* ── Helpers ─────────────────────────────────────────────────── */
+function togglePwd(inputId, iconId) {
+  const inp = document.getElementById(inputId);
+  const ico = document.getElementById(iconId);
+  if (inp.type === 'password') { inp.type = 'text'; ico.className = 'fa-solid fa-eye-slash'; }
+  else { inp.type = 'password'; ico.className = 'fa-solid fa-eye'; }
+}
+
+function showAlert(id, msg, type = 'error') {
+  const el = document.getElementById(id);
+  el.className = `alert alert-${type} show`;
+  el.innerHTML = msg;
+}
+
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  el.className = 'alert';
+  el.innerHTML = '';
+}
+
+function fieldErr(id, msg) {
+  const inp = document.getElementById(id);
+    if (!inp) return;
+    if (msg) {
+      inp.classList.add('error');
+      showTooltip(msg, 'warning');
     } else {
-      input.type = 'password';
-      icon.className = 'fa-regular fa-eye';
-    }
-  }
-  function setLoading(btnId, spinnerId, textId, on) {
-    document.getElementById(btnId).disabled = on;
-    document.getElementById(spinnerId).classList.toggle('on', on);
-  }
-  function openModal(id) { document.getElementById(id).classList.add('open'); }
-  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-  // ── Step 1 → Step 2 ────────────────────────────────────────────────
-  async function goStep2() {
-    clearFieldErrs();
-    clearAlert('step1Alert');
-
-    const firstName = document.getElementById('signupFirstName').value.trim();
-    const lastName  = document.getElementById('signupLastName').value.trim();
-    const email     = document.getElementById('signupEmail').value.trim();
-    const username  = document.getElementById('signupUsername').value.trim();
-    const password  = document.getElementById('signupPassword').value;
-    const confirm   = document.getElementById('signupConfirm').value;
-
-    let valid = true;
-    if (!firstName) { fieldErr('signupFirstName', 'First name is required.'); valid = false; }
-    if (!lastName)  { fieldErr('signupLastName',  'Last name is required.');  valid = false; }
-    if (!email)     { fieldErr('signupEmail',     'Email is required.');       valid = false; }
-    if (!username)  { fieldErr('signupUsername',  'Username is required.');    valid = false; }
-    if (password.length < 6) { fieldErr('signupPassword', 'Password must be at least 6 characters.'); valid = false; }
-    if (password !== confirm) { fieldErr('signupConfirm', 'Passwords do not match.'); valid = false; }
-    if (!valid) return;
-
-    const btn = document.getElementById('nextBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking…';
-
-    try {
-      // Check if username/email already exists
-      const res = await fetch('/api/check-availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username })
-      });
-      const data = await res.json();
-
-      if (data.emailTaken)    { fieldErr('signupEmail',    'This email is already registered.');  btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>'; return; }
-      if (data.usernameTaken) { fieldErr('signupUsername', 'This username is already taken.');    btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>'; return; }
-    } catch(e) {
-      // Continue anyway if check fails
-    }
-
-    formData = { firstName, lastName, email, username, password, fullName: `${firstName} ${lastName}` };
-
-    // Go to step 2
-    document.getElementById('panelStep1').classList.remove('active');
-    document.getElementById('panelStep2').classList.add('active');
-    document.getElementById('step1Ind').classList.remove('active');
-    document.getElementById('step1Ind').classList.add('done');
-    document.getElementById('step1Ind').querySelector('.step-circle').innerHTML = '✓';
-    document.getElementById('line1').classList.add('done');
-
-    btn.disabled = false;
-    btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>';
-  }
-
-  function goBack() {
-    document.getElementById('panelStep2').classList.remove('active');
-    document.getElementById('panelStep1').classList.add('active');
-    document.getElementById('step1Ind').classList.add('active');
-    document.getElementById('step1Ind').classList.remove('done');
-    document.getElementById('step1Ind').querySelector('.step-circle').innerHTML = '1';
-    document.getElementById('line1').classList.remove('done');
-    selectedPackage = null;
-    document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
-  }
-
-  // ── Package selection ──────────────────────────────────────────────
-  function selectPkg(pkg) {
-    selectedPackage = pkg;
-    document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('pkg_' + pkg).classList.add('selected');
-    clearAlert('step2Alert');
-  }
-
-  // ── Submit paid package ────────────────────────────────────────────
-  async function doSubmit() {
-    if (!selectedPackage) { showAlert('step2Alert', 'Please select a package first.'); return; }
-    clearAlert('step2Alert');
-    setLoading('submitBtn', 'submitSpinner', 'submitBtnText', true);
-
-    try {
-      const res = await fetch('/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName:  formData.lastName,
-          email:     formData.email,
-          username:  formData.username,
-          password:  formData.password,
-          package:   selectedPackage
-        })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        showSuccess(
-          '📬 Request Submitted!',
-          `Thank you, <strong>${formData.firstName}</strong>! Your signup request has been submitted. We'll review it and notify you by email once approved.`,
-          `Selected plan: <strong>${selectedPackage.charAt(0).toUpperCase() + selectedPackage.slice(1)}</strong>. Payment instructions will be sent to <strong>${formData.email}</strong>.`
-        );
-      } else {
-        showAlert('step2Alert', data.message || 'Something went wrong. Please try again.');
-        setLoading('submitBtn', 'submitSpinner', 'submitBtnText', false);
-      }
-    } catch(e) {
-      showAlert('step2Alert', 'Network error. Please try again.');
-      setLoading('submitBtn', 'submitSpinner', 'submitBtnText', false);
+      inp.classList.remove('error');
     }
   }
 
-  // ── Free Trial ─────────────────────────────────────────────────────
-  function doFreeTrial() {
-    document.getElementById('trialEmailDisplay').textContent = formData.email;
-    clearAlert('trialAlert');
-    openModal('trialModal');
+function clearFieldErrs() {
+  ['firstName','lastName','signupEmail','signupUsername','signupPassword','signupConfirm']
+    .forEach(id => document.getElementById(id).classList.remove('error'));
+}
+
+let tooltipTimer = null;
+function showTooltip(msg, type = 'error') {
+  const el = document.getElementById('tooltipMsg');
+  el.textContent = msg;
+  el.className = `tooltip-msg ${type} show`;
+  clearTimeout(tooltipTimer);
+  tooltipTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 2500);
+}
+
+function autoHideErrors() {
+  setTimeout(() => clearFieldErrs(), 2500);
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => {
+  if (e.target === m) m.classList.remove('open');
+}));
+
+function setLoading(btnId, spinnerId, textId, on) {
+  document.getElementById(btnId).disabled = on;
+  document.getElementById(spinnerId).classList.toggle('on', on);
+  document.getElementById(textId).style.display = on ? 'none' : 'inline';
+}
+
+/* ── Step indicator ──────────────────────────────────────────── */
+function setStep(n) {
+  document.getElementById('step1Ind').className = 'step' + (n >= 1 ? (n > 1 ? ' done' : ' active') : '');
+  document.getElementById('step1Circle').innerHTML = n > 1 ? '<i class="fa-solid fa-check" style="font-size:13px;"></i>' : '1';
+  document.getElementById('stepLine').className = 'step-line' + (n > 1 ? ' done' : '');
+  document.getElementById('step2Ind').className = 'step' + (n >= 2 ? ' active' : '');
+}
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ── Step 1 validation & advance ────────────────────────────── */
+async function goStep2() {
+  clearFieldErrs();
+
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName  = document.getElementById('lastName').value.trim();
+  const email     = document.getElementById('signupEmail').value.trim();
+  const username  = document.getElementById('signupUsername').value.trim();
+  const password  = document.getElementById('signupPassword').value;
+  const confirm   = document.getElementById('signupConfirm').value;
+
+  let valid = true;
+  let tooltipShown = false;
+
+  if (!firstName)                     { document.getElementById('firstName').classList.add('error');    valid = false; }
+  if (!lastName)                      { document.getElementById('lastName').classList.add('error');     valid = false; }
+  if (!email || !email.includes('@')) { document.getElementById('signupEmail').classList.add('error');  valid = false; }
+  if (!username || username.length < 4){ document.getElementById('signupUsername').classList.add('error'); valid = false; }
+
+  const hasBlankFields = !firstName || !lastName || !email || !email.includes('@') || !username || username.length < 4;
+
+  if (hasBlankFields) {
+    showTooltip('Please fill in all required fields.', 'warning');
+    if (!valid) { autoHideErrors(); return; }
   }
 
-  async function confirmTrial() {
-    setLoading('trialBtn', 'trialSpinner', 'trialBtnText', true);
-    clearAlert('trialAlert');
+  if (!password || password.length < 8) {
+    document.getElementById('signupPassword').classList.add('error');
+    if (!hasBlankFields) showTooltip('Password must be at least 8 characters.', 'warning');
+    valid = false;
+  }
+  if (!confirm || password !== confirm) {
+    document.getElementById('signupConfirm').classList.add('error');
+    if (!hasBlankFields && (password && password.length >= 8)) showTooltip('Passwords do not match.', 'warning');
+    valid = false;
+  }
+  if (!valid) { autoHideErrors(); return; }
 
-    try {
-      const res = await fetch('/api/free-trial', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName:  formData.lastName,
-          email:     formData.email
-        })
-      });
-      const data = await res.json();
+  // Check for existing email / username
+  const btn = document.querySelector('#panelStep1 .btn-primary');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking…';
 
-      if (data.success) {
-        closeModal('trialModal');
-        showSuccess(
-          '🎁 Trial Activated!',
-          `Your free trial credentials have been sent to <strong>${formData.email}</strong>. Check your inbox and log in to get started!`,
-          '⏰ Your 3-day trial starts now. Limited access to Shell, Base, and Tertiary modules.'
-        );
-      } else {
-        showAlert('trialAlert', data.message || 'An error occurred. Please try again.', 'error');
-        setLoading('trialBtn', 'trialSpinner', 'trialBtnText', false);
-      }
-    } catch(e) {
-      showAlert('trialAlert', 'Network error. Please try again.', 'error');
-      setLoading('trialBtn', 'trialSpinner', 'trialBtnText', false);
-    }
+  try {
+    const checkRes = await fetch('/api/check-availability', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, username })
+    });
+    const checkData = await checkRes.json();
+    const existEmail = checkData.emailTaken;
+    const existUser  = checkData.usernameTaken;
+    if (existEmail) { fieldErr('signupEmail', 'This email is already registered.'); btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>'; return; }
+    if (existUser)  { fieldErr('signupUsername', 'This username is already taken.'); btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>'; return; }
+  } catch(e) {
+    showTooltip('Connection error. Please try again.', 'error');
+    btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>';
+    return;
   }
 
-  // ── RFQ ───────────────────────────────────────────────────────────
-  function doRFQ() {
-    if (!document.getElementById('rfqModal').classList.contains('open')) {
-      clearAlert('rfqAlert');
-      openModal('rfqModal');
-      return;
-    }
-    // Submit RFQ
-    const company = document.getElementById('rfqCompany').value.trim();
-    const users   = document.getElementById('rfqUsers').value.trim();
-    const message = document.getElementById('rfqMessage').value.trim();
+  btn.disabled = false; btn.innerHTML = 'Next <i class="fa-solid fa-arrow-right"></i>';
 
-    if (!message) { showAlert('rfqAlert', 'Please describe your requirements.', 'error'); return; }
+  // Store form data
+  formData = { firstName, lastName, fullName: `${firstName} ${lastName}`, email, username, password };
 
-    setLoading('rfqBtn', 'rfqSpinner', 'rfqBtnText', true);
+  setStep(2);
+  showPanel('panelStep2');
+}
 
-    // Send RFQ email via contact endpoint
-    fetch('/api/contact', {
+function goBack() {
+  setStep(1);
+  showPanel('panelStep1');
+  selectedPackage = null;
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('selectedPkgRow').style.display = 'none';
+}
+
+/* ── Package selection ───────────────────────────────────────── */
+function selectPkg(pkg) {
+  selectedPackage = pkg;
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('pkg_' + pkg).classList.add('selected');
+  document.getElementById('selectedPkgRow').style.display = 'block';
+  clearAlert('step2Alert');
+}
+
+/* ── Submit paid package request ────────────────────────────── */
+async function doSubmit() {
+  if (!selectedPackage) { showAlert('step2Alert', 'Please select a package.'); return; }
+  clearAlert('step2Alert');
+  setLoading('submitBtn', 'submitSpinner', 'submitBtnText', true);
+
+  try {
+    const res = await fetch('/api/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: formData.fullName || 'Visitor',
-        email: formData.email || '',
-        company, users, message
+        firstName: formData.firstName,
+        lastName:  formData.lastName,
+        email:     formData.email,
+        username:  formData.username,
+        password:  formData.password,
+        package:   selectedPackage
       })
-    })
-    .then(r => r.json())
-    .then(() => {
-      closeModal('rfqModal');
-      showAlert('step2Alert', '✅ Quote request sent! We\'ll be in touch within 24 hours.', 'success');
-      setLoading('rfqBtn', 'rfqSpinner', 'rfqBtnText', false);
-    })
-    .catch(() => {
-      showAlert('rfqAlert', 'Failed to send. Please email us directly.', 'error');
-      setLoading('rfqBtn', 'rfqSpinner', 'rfqBtnText', false);
     });
-  }
+    const data = await res.json();
 
-  // ── Success panel ─────────────────────────────────────────────────
-  function showSuccess(title, msg, boxText) {
-    document.getElementById('panelStep2').classList.remove('active');
-    document.getElementById('panelStep1').classList.remove('active');
-    document.getElementById('panelSuccess').classList.add('active');
-    document.getElementById('successTitle').innerHTML = title;
-    document.getElementById('successMsg').innerHTML = msg;
-    if (boxText) {
-      document.getElementById('successBox').style.display = 'block';
-      document.getElementById('successBoxText').innerHTML = boxText;
+    if (data.success) {
+      showSuccess(
+        '✅',
+        'Request Submitted!',
+        `Thank you, <strong>${formData.firstName}</strong>! Your signup request has been submitted. We'll review it and send you an approval email at <strong>${formData.email}</strong>.`
+      );
+    } else {
+      showAlert('step2Alert', data.message || 'An error occurred. Please try again.');
+      setLoading('submitBtn', 'submitSpinner', 'submitBtnText', false);
     }
-    // Mark step 2 done
-    document.getElementById('step2Ind').classList.remove('active');
-    document.getElementById('step2Ind').classList.add('done');
-    document.getElementById('step2Ind').querySelector('.step-circle').innerHTML = '✓';
+  } catch(e) {
+    showAlert('step2Alert', 'An error occurred. Please try again.');
+    setLoading('submitBtn', 'submitSpinner', 'submitBtnText', false);
   }
+}
 
-  // ── Close modal on backdrop click ─────────────────────────────────
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('modal') && !['trialModal'].includes(e.target.id)) {
-      e.target.classList.remove('open');
+/* ── Free trial ──────────────────────────────────────────────── */
+function doFreeTrial() {
+  document.getElementById('trialEmailDisplay').textContent = formData.email;
+  clearAlert('trialAlert');
+  openModal('trialModal');
+}
+
+async function confirmTrial() {
+  setLoading('trialBtn', 'trialSpinner', 'trialBtnText', true);
+  clearAlert('trialAlert');
+
+  try {
+    const trialRes = await fetch('/api/free-trial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName: formData.firstName, lastName: formData.lastName, email: formData.email })
+      });
+      const result = await trialRes.json();
+      result.ok = result.success;
+
+    if (result.error === 'email_exists') {
+      showAlert('trialAlert', 'This email has already been used for a trial account.', 'error');
+      setLoading('trialBtn', 'trialSpinner', 'trialBtnText', false);
+      return;
     }
-  });
+
+    // Email sent automatically by /api/free-trial
+
+    closeModal('trialModal');
+    showSuccess(
+      '🎉',
+      'Trial Activated!',
+      `Your free trial credentials have been sent to <strong>${formData.email}</strong>. Check your inbox and log in to get started!`
+    );
+
+  } catch(e) {
+    showAlert('trialAlert', 'An error occurred. Please try again.');
+    setLoading('trialBtn', 'trialSpinner', 'trialBtnText', false);
+  }
+}
+
+/* ── RFQ ─────────────────────────────────────────────────────── */
+function openRFQ() {
+  document.getElementById('rfqName').value  = formData.fullName  || '';
+  document.getElementById('rfqEmail').value = formData.email     || '';
+  document.getElementById('rfqMessage').value = '';
+  clearAlert('rfqAlert');
+  openModal('rfqModal');
+}
+
+async function doRFQ() {
+  const message = document.getElementById('rfqMessage').value.trim();
+  clearAlert('rfqAlert');
+  if (!message) { showAlert('rfqAlert', 'Please enter a message.'); return; }
+
+  setLoading('rfqBtn', 'rfqSpinner', 'rfqBtnText', true);
+
+  try {
+    await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: formData.fullName, email: formData.email, message, company: document.getElementById('rfqCompany')?.value || '', users: document.getElementById('rfqUsers')?.value || '' })
+    });
+
+    closeModal('rfqModal');
+    showSuccess(
+      '📋',
+      'Inquiry Sent!',
+      `Thank you, <strong>${formData.firstName}</strong>! Your inquiry has been sent to ByteStack Labs. We'll get back to you at <strong>${formData.email}</strong> shortly.`
+    );
+
+  } catch(e) {
+    showAlert('rfqAlert', 'Failed to send. Please try again.');
+    setLoading('rfqBtn', 'rfqSpinner', 'rfqBtnText', false);
+  }
+}
+
+/* ── Success screen ──────────────────────────────────────────── */
+function showSuccess(icon, title, msg) {
+  document.getElementById('successIcon').textContent = icon;
+  document.getElementById('successTitle').textContent = title;
+  document.getElementById('successMsg').innerHTML = msg;
+  document.querySelectorAll('.steps').forEach(s => s.style.display = 'none');
+  showPanel('panelSuccess');
+}
 </script>
+
+<div id="tooltipMsg" class="tooltip-msg"></div>
 
 </body>
 </html>
