@@ -722,43 +722,36 @@
       filter: grayscale(40%);
     }
   
-    /* Notification Bell */
-    .notif-bell-wrap {
+    
+
+  
+    /* Slide-down toast notification */
+    .toast-notif {
       position: fixed;
-      top: 18px;
-      right: 24px;
+      top: -100px;
+      left: 20px;
       z-index: 9999;
-      cursor: pointer;
-    }
-    .notif-bell-icon {
-      font-size: 24px;
-      filter: grayscale(1) opacity(0.5);
-      transition: all 0.3s;
-      display: inline-block;
-    }
-    .notif-bell-icon.active {
-      filter: none;
-      animation: bellRing 0.6s ease infinite alternate;
-    }
-    @keyframes bellRing {
-      0%   { transform: rotate(-15deg); }
-      100% { transform: rotate(15deg); }
-    }
-    .notif-badge {
-      display: none;
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: #e53e3e;
+      background: #2d3748;
       color: #fff;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 5px;
-      border-radius: 20px;
-      min-width: 16px;
-      text-align: center;
+      padding: 14px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 320px;
+      cursor: pointer;
+      transition: top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    .notif-badge.show { display: inline-block; }
+    .toast-notif.show { top: 20px; }
+    .toast-notif .toast-icon { font-size: 20px; flex-shrink: 0; }
+    .toast-notif .toast-body { flex: 1; }
+    .toast-notif .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+    .toast-notif .toast-msg { font-size: 12px; opacity: 0.85; }
+    .toast-notif .toast-close { opacity: 0.6; font-size: 16px; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
+    .toast-notif .toast-close:hover { opacity: 1; }
 
   </style>
 </head>
@@ -1257,8 +1250,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const user = await response.json();
 		
 		// Show admin card only for admin users
-		initNotifBell(user.role);
-		if (typeof initNotifBell === 'function') initNotifBell(user ? user.role : null);
+		initAdminNotif(user.role);
 		if (user && (user.role === 'admin' || user.username === 'admin')) {
 		const adminCard = document.getElementById("adminCard");
 		if (adminCard) {
@@ -1292,41 +1284,45 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	});
   
-    /* ── Notification Bell (admin only) ─────────────────────── */
-    let lastPendingCount = -1;
+    
 
-    async function initNotifBell(role) {
-      if (role !== 'admin') return;
-      document.getElementById('notifBellWrap').style.display = 'block';
-      await checkPendingNotif();
-      setInterval(checkPendingNotif, 30000);
+  
+    /* ── Pending Signup Toast (admin only) ───────────────────── */
+    let toastDismissed = false;
+
+    function showToast(count) {
+      document.getElementById('toastMsg').textContent = count + ' pending signup' + (count > 1 ? 's' : '') + ' waiting for your review.';
+      document.getElementById('pendingToast').classList.add('show');
+      toastDismissed = false;
     }
 
-    async function checkPendingNotif() {
+    function hideToast() {
+      document.getElementById('pendingToast').classList.remove('show');
+      toastDismissed = true;
+    }
+
+    async function checkPendingSignups() {
       try {
         const res = await fetch('/api/users/pending');
         const users = await res.json();
         if (!Array.isArray(users)) return;
         const count = users.length;
-        const bell = document.getElementById('notifBellIcon');
-        const badge = document.getElementById('notifBadge');
-        const tooltip = document.getElementById('notifTooltip');
 
         if (count > 0) {
-          bell.classList.add('active');
-          badge.textContent = count;
-          badge.classList.add('show');
-          if (lastPendingCount >= 0 && count > lastPendingCount) {
-            tooltip.textContent = (count - lastPendingCount) + ' new signup! Click to review';
-            tooltip.style.display = 'block';
-            setTimeout(() => { tooltip.style.display = 'none'; }, 5000);
-          }
+          // Always show/update toast if there are pending signups
+          // Re-show even if dismissed (every 30s cycle)
+          showToast(count);
         } else {
-          bell.classList.remove('active');
-          badge.classList.remove('show');
+          // No pending - hide toast
+          document.getElementById('pendingToast').classList.remove('show');
         }
-        lastPendingCount = count;
       } catch(e) { /* silent */ }
+    }
+
+    async function initAdminNotif(role) {
+      if (role !== 'admin') return;
+      await checkPendingSignups();
+      setInterval(checkPendingSignups, 30000);
     }
 
   </script>
@@ -1341,13 +1337,15 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 
-  <!-- Notification Bell (admin only) -->
-  <div class="notif-bell-wrap" id="notifBellWrap" style="display:none;" onclick="window.location.href='/admin'">
-    <div style="position:relative;display:inline-block;">
-      <span class="notif-bell-icon" id="notifBellIcon">🔔</span>
-      <span class="notif-badge" id="notifBadge"></span>
+  <!-- Slide-down Toast Notification -->
+  <div class="toast-notif" id="pendingToast" onclick="window.location.href='/admin'">
+    <div class="toast-icon">🔔</div>
+    <div class="toast-body">
+      <div class="toast-title">New Signup Request</div>
+      <div class="toast-msg" id="toastMsg">You have pending signups to review.</div>
     </div>
-    <div id="notifTooltip" style="display:none;position:absolute;top:36px;right:0;background:#2d3748;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);"></div>
+    <span class="toast-close" onclick="event.stopPropagation();hideToast()">✕</span>
   </div>
+
 </body>
 </html>
