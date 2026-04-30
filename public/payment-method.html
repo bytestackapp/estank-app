@@ -416,6 +416,7 @@
 
 <div id="tooltipMsg" class="tooltip-msg"></div>
 
+<script src="drainage_data.js"></script>
 <script>
 /* ── Package config ──────────────────────────────────────────── */
 const PACKAGES = {
@@ -465,11 +466,14 @@ async function proceed() {
 
   if (selectedMethod === 'paypal') {
     setLoading(true);
+    // Map frontend keys → API keys
+    const packageMap = { basic: 'monthly', pro: 'yearly', premium: 'premium' };
+    const apiPackage = packageMap[selectedPackage] || selectedPackage;
     try {
       const res = await fetch('/api/create-paypal-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ package: selectedPackage })
+        body: JSON.stringify({ package: apiPackage })
       });
       const data = await res.json();
       if (!data.approvalUrl) throw new Error('No approval URL returned');
