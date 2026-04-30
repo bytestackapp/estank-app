@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 ═══════════════════════════════════════════════════════════════════════════════
-    TANK MTO ESTIMATOR SUITE — Payment Method
+    STORM DRAINAGE CALCULATOR — Payment Method
     © ByteStack Labs 2025. All Rights Reserved.
 ═══════════════════════════════════════════════════════════════════════════════
 -->
@@ -267,7 +267,7 @@
       </div>
       <div class="pay-amount-highlight">
         <div style="text-align:center;margin:12px 0;">
-          <img src="/qr/gcash-qr.png" alt="GCash QR" style="width:160px;height:160px;border-radius:12px;border:2px solid #e2e8f0;object-fit:contain;background:#f9f9f9;">
+          <img src="/qr/gcash-qr.png" alt="Gcash QR" style="width:160px;height:160px;border-radius:12px;border:2px solid #e2e8f0;object-fit:contain;background:#f9f9f9;">
           <p style="font-size:11px;color:#718096;margin-top:4px;">Scan QR code to pay</p>
         </div>
         <div class="pay-amount-big" id="gcashAmount">₱450</div>
@@ -522,7 +522,7 @@ async function submitPHPayment(method) {
   btnText.style.display = 'none';
 
   try {
-    const res = await fetch('/api/submit-ph-payment', {
+    const submitRes = await fetch('/api/submit-ph-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -537,14 +537,11 @@ async function submitPHPayment(method) {
         paymentAmount:    parseFloat(amount)
       })
     });
-    const data = await res.json();
-
-    if (!data.success) {
+    const submitData = await submitRes.json();
+    if (!submitData.success) {
       alertEl.className = 'alert alert-error show';
-      alertEl.textContent = data.message || 'An error occurred. Please try again.';
-      btn.disabled = false;
-      spinner.classList.remove('on');
-      btnText.style.display = 'inline';
+      alertEl.textContent = submitData.message || 'An error occurred. Please try again.';
+      btn.disabled = false; spinner.classList.remove('on'); btnText.style.display = 'inline';
       return;
     }
 
