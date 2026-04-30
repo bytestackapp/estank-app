@@ -1649,23 +1649,7 @@
       <div id="paymentDetailsContent" style="margin-top:16px;"></div>
     </div>
   </div>
-
-  <!-- Notification Bell -->
-  <div id="notifBell" style="position:fixed;top:18px;right:24px;z-index:9999;cursor:pointer;" onclick="toggleNotifPanel()">
-    <div style="position:relative;display:inline-block;">
-      <span style="font-size:24px;">🔔</span>
-      <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e53e3e;color:#fff;font-size:10px;font-weight:700;padding:2px 5px;border-radius:20px;min-width:16px;text-align:center;"></span>
-    </div>
-  </div>
-  <div id="notifPanel" style="display:none;position:fixed;top:52px;right:20px;z-index:9998;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.15);width:300px;max-height:400px;overflow-y:auto;">
-    <div style="padding:12px 16px;border-bottom:1px solid #e2e8f0;font-weight:700;color:#2d3748;display:flex;justify-content:space-between;align-items:center;">
-      <span>Notifications</span>
-      <button onclick="clearNotifications()" style="background:none;border:none;color:#a0aec0;cursor:pointer;font-size:12px;">Clear all</button>
-    </div>
-    <div id="notifList" style="padding:8px 0;">
-      <div style="padding:12px 16px;color:#718096;font-size:13px;text-align:center;">No new notifications</div>
-    </div>
-  </div>
+</div>
 
     /* ── Payment Details ─────────────────────────────────────── */
     function showPaymentDetails(username, method, reference, amount, pkg, status) {
@@ -1685,60 +1669,7 @@
       openModal('paymentDetailsModal');
     }
 
-    /* ── Notification Bell ───────────────────────────────────── */
-    let lastPendingCount = 0;
-    let notifMessages = [];
-
-    function toggleNotifPanel() {
-      const panel = document.getElementById('notifPanel');
-      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    }
-
-    document.addEventListener('click', function(e) {
-      const bell = document.getElementById('notifBell');
-      const panel = document.getElementById('notifPanel');
-      if (bell && panel && !bell.contains(e.target) && !panel.contains(e.target)) {
-        panel.style.display = 'none';
-      }
-    });
-
-    function clearNotifications() {
-      notifMessages = [];
-      document.getElementById('notifBadge').style.display = 'none';
-      document.getElementById('notifList').innerHTML = '<div style="padding:12px 16px;color:#718096;font-size:13px;text-align:center;">No new notifications</div>';
-    }
-
-    function addNotification(msg) {
-      notifMessages.unshift({ msg, time: new Date().toLocaleTimeString() });
-      const badge = document.getElementById('notifBadge');
-      badge.textContent = notifMessages.length;
-      badge.style.display = 'inline-block';
-      const list = document.getElementById('notifList');
-      list.innerHTML = notifMessages.map(function(n) {
-        return '<div style="padding:10px 16px;border-bottom:1px solid #f7fafc;"><div style="font-size:13px;color:#2d3748;">' + n.msg + '</div><div style="font-size:11px;color:#a0aec0;margin-top:2px;">' + n.time + '</div></div>';
-      }).join('');
-    }
-
-    async function checkNewPending() {
-      try {
-        const res = await fetch('/api/users/pending');
-        const users = await res.json();
-        if (Array.isArray(users)) {
-          const count = users.length;
-          if (lastPendingCount > 0 && count > lastPendingCount) {
-            const diff = count - lastPendingCount;
-            addNotification('🔔 ' + diff + ' new signup request' + (diff > 1 ? 's' : '') + ' received!');
-            refreshAllData();
-          }
-          lastPendingCount = count;
-        }
-      } catch(e) { /* silent fail */ }
-    }
-
-    setTimeout(function() {
-      checkNewPending();
-      setInterval(checkNewPending, 30000);
-    }, 3000);
+    
 
 </body>
 </html>

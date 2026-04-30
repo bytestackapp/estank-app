@@ -721,6 +721,45 @@
       opacity: 0.5;
       filter: grayscale(40%);
     }
+  
+    /* Notification Bell */
+    .notif-bell-wrap {
+      position: fixed;
+      top: 18px;
+      right: 24px;
+      z-index: 9999;
+      cursor: pointer;
+    }
+    .notif-bell-icon {
+      font-size: 24px;
+      filter: grayscale(1) opacity(0.5);
+      transition: all 0.3s;
+      display: inline-block;
+    }
+    .notif-bell-icon.active {
+      filter: none;
+      animation: bellRing 0.6s ease infinite alternate;
+    }
+    @keyframes bellRing {
+      0%   { transform: rotate(-15deg); }
+      100% { transform: rotate(15deg); }
+    }
+    .notif-badge {
+      display: none;
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #e53e3e;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 20px;
+      min-width: 16px;
+      text-align: center;
+    }
+    .notif-badge.show { display: inline-block; }
+
   </style>
 </head>
 <body>
@@ -1218,6 +1257,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		const user = await response.json();
 		
 		// Show admin card only for admin users
+		initNotifBell(user.role);
+		if (typeof initNotifBell === 'function') initNotifBell(user ? user.role : null);
 		if (user && (user.role === 'admin' || user.username === 'admin')) {
 		const adminCard = document.getElementById("adminCard");
 		if (adminCard) {
@@ -1250,6 +1291,44 @@ document.addEventListener('DOMContentLoaded', function() {
 		console.error("Error checking user role:", err);
 	}
 	});
+  
+    /* ── Notification Bell (admin only) ─────────────────────── */
+    let lastPendingCount = -1;
+
+    async function initNotifBell(role) {
+      if (role !== 'admin') return;
+      document.getElementById('notifBellWrap').style.display = 'block';
+      await checkPendingNotif();
+      setInterval(checkPendingNotif, 30000);
+    }
+
+    async function checkPendingNotif() {
+      try {
+        const res = await fetch('/api/users/pending');
+        const users = await res.json();
+        if (!Array.isArray(users)) return;
+        const count = users.length;
+        const bell = document.getElementById('notifBellIcon');
+        const badge = document.getElementById('notifBadge');
+        const tooltip = document.getElementById('notifTooltip');
+
+        if (count > 0) {
+          bell.classList.add('active');
+          badge.textContent = count;
+          badge.classList.add('show');
+          if (lastPendingCount >= 0 && count > lastPendingCount) {
+            tooltip.textContent = (count - lastPendingCount) + ' new signup! Click to review';
+            tooltip.style.display = 'block';
+            setTimeout(() => { tooltip.style.display = 'none'; }, 5000);
+          }
+        } else {
+          bell.classList.remove('active');
+          badge.classList.remove('show');
+        }
+        lastPendingCount = count;
+      } catch(e) { /* silent */ }
+    }
+
   </script>
 
   <div id="trialUpgradeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
@@ -1260,6 +1339,15 @@ document.addEventListener('DOMContentLoaded', function() {
       <a href="/signup" style="display:inline-block;padding:12px 28px;background:#3182ce;color:#fff;text-decoration:none;border-radius:8px;font-weight:500;margin-bottom:12px;">Upgrade Now</a><br>
       <button onclick="document.getElementById('trialUpgradeModal').style.display='none';" style="background:none;border:none;color:#a0aec0;cursor:pointer;font-size:14px;margin-top:8px;">Maybe later</button>
     </div>
+  </div>
+
+  <!-- Notification Bell (admin only) -->
+  <div class="notif-bell-wrap" id="notifBellWrap" style="display:none;" onclick="window.location.href='/admin'">
+    <div style="position:relative;display:inline-block;">
+      <span class="notif-bell-icon" id="notifBellIcon">🔔</span>
+      <span class="notif-badge" id="notifBadge"></span>
+    </div>
+    <div id="notifTooltip" style="display:none;position:absolute;top:36px;right:0;background:#2d3748;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.2);"></div>
   </div>
 </body>
 </html>
