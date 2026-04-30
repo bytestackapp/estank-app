@@ -17,9 +17,9 @@ const PAYPAL_BASE = process.env.PAYPAL_ENV === 'live'
 
 /* ── Package prices in USD ───────────────────────────────────── */
 const PRICES = {
-  monthly: { amount: '15.00', label: 'Monthly Plan — Tank MTO Estimator'   },
-  yearly:  { amount: '120.00',label: 'Yearly Basic — Tank MTO Estimator'   },
-  premium: { amount: '100.00',label: 'Premium Plan — Yearly Subscription'   }
+  monthly: { amount: '15.00', label: 'Monthly Plan — Tank MTO Estimator'    },
+  yearly:  { amount: '120.00',label: 'Yearly Basic — Tank MTO Estimator'    },
+  premium: { amount: '180.00',label: 'Yearly Premium — Tank MTO Estimator'  }
 };
 
 /* ── Get PayPal access token ─────────────────────────────────── */
