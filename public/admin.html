@@ -1158,9 +1158,7 @@
               </div>
             </div>
             <div class="user-actions">
-              ${user.paymentMethod ? `<button class="btn btn-secondary" onclick="showPaymentDetails('${user.username}', '${user.paymentMethod}', '${user.paymentReference || 'N/A'}', '${user.paymentAmount || 'N/A'}', '${user.package || 'N/A'}', '${user.paymentStatus || 'unverified'}')">
-                <span class="btn-text">💳 Payment</span>
-              </button>` : ''}
+              ${user.paymentMethod ? `<button class="btn btn-secondary" style="background:#718096;color:#fff;" onclick="showPaymentDetails('${user.username}','${user.paymentMethod}','${user.paymentReference||'N/A'}','${user.paymentAmount||'N/A'}','${user.package||'N/A'}','${user.paymentStatus||'unverified'}')"><span class="btn-text">💳 Payment</span></button>` : ''}
               <button class="btn btn-primary" onclick="approveUser('${user.username}')">
                 <span class="btn-text">Approve</span>
                 <div class="spinner"></div>
@@ -1639,6 +1637,24 @@
     console.log('%c- updateDashboard()', 'color: #718096;');
 
     console.log('Admin Access page fully initialized and ready');
+  
+    /* ── Payment Details ─────────────────────────────── */
+    function showPaymentDetails(username, method, reference, amount, pkg, status) {
+      const methodLabels = { gcash: 'GCash', maya: 'Maya', bank: 'Bank Transfer' };
+      const pkgLabels = { monthly: 'Monthly ($15/mo)', yearly: 'Yearly Basic ($120/yr)', premium: 'Yearly Premium ($180/yr)' };
+      const statusColor = status === 'verified' ? '#38a169' : '#c97000';
+      document.getElementById('paymentDetailsContent').innerHTML =
+        '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:8px;color:#718096;width:130px;">Username</td><td style="padding:8px;font-weight:600;color:#2d3748;">' + username + '</td></tr>' +
+        '<tr style="background:#f7fafc;"><td style="padding:8px;color:#718096;">Package</td><td style="padding:8px;font-weight:600;color:#2d3748;">' + (pkgLabels[pkg]||pkg) + '</td></tr>' +
+        '<tr><td style="padding:8px;color:#718096;">Payment Method</td><td style="padding:8px;font-weight:600;color:#2d3748;">' + (methodLabels[method]||method) + '</td></tr>' +
+        '<tr style="background:#f7fafc;"><td style="padding:8px;color:#718096;">Reference #</td><td style="padding:8px;font-weight:600;color:#2d3748;">' + reference + '</td></tr>' +
+        '<tr><td style="padding:8px;color:#718096;">Amount Sent</td><td style="padding:8px;font-weight:600;color:#2d3748;">₱' + amount + '</td></tr>' +
+        '<tr style="background:#f7fafc;"><td style="padding:8px;color:#718096;">Status</td><td style="padding:8px;font-weight:600;color:' + statusColor + ';">' + status.toUpperCase() + '</td></tr>' +
+        '</table>';
+      openModal('paymentDetailsModal');
+    }
+
   </script>
 
   <!-- Payment Details Modal -->
@@ -1649,27 +1665,6 @@
       <div id="paymentDetailsContent" style="margin-top:16px;"></div>
     </div>
   </div>
-</div>
-
-    /* ── Payment Details ─────────────────────────────────────── */
-    function showPaymentDetails(username, method, reference, amount, pkg, status) {
-      const methodLabels = { gcash: 'GCash', maya: 'Maya', bank: 'Bank Transfer' };
-      const pkgLabels = { monthly: 'Monthly Plan ($15/mo)', yearly: 'Yearly Basic ($120/yr)', premium: 'Yearly Premium ($180/yr)' };
-      const statusColor = status === 'verified' ? '#38a169' : '#c97000';
-      document.getElementById('paymentDetailsContent').innerHTML = `
-        <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="padding:8px;color:#718096;width:130px;">Username</td><td style="padding:8px;font-weight:600;color:#2d3748;">${username}</td></tr>
-          <tr style="background:#f7fafc;"><td style="padding:8px;color:#718096;">Package</td><td style="padding:8px;font-weight:600;color:#2d3748;">${pkgLabels[pkg] || pkg}</td></tr>
-          <tr><td style="padding:8px;color:#718096;">Payment Method</td><td style="padding:8px;font-weight:600;color:#2d3748;">${methodLabels[method] || method}</td></tr>
-          <tr style="background:#f7fafc;"><td style="padding:8px;color:#718096;">Reference #</td><td style="padding:8px;font-weight:600;color:#2d3748;">${reference}</td></tr>
-          <tr><td style="padding:8px;color:#718096;">Amount Sent</td><td style="padding:8px;font-weight:600;color:#2d3748;">₱${amount}</td></tr>
-          <tr style="background:#f7fafc;"><td style="padding:8px;color:#718096;">Status</td><td style="padding:8px;font-weight:600;color:${statusColor};">${status.toUpperCase()}</td></tr>
-        </table>
-      `;
-      openModal('paymentDetailsModal');
-    }
-
-    
 
 </body>
 </html>
