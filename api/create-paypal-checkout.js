@@ -8,7 +8,7 @@
 
 const PAYPAL_CLIENT_ID     = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const APP_URL              = process.env.APP_URL || 'https://stormflowpro.vercel.app';
+const APP_URL              = process.env.APP_URL || 'https://tank-estimator-app.vercel.app';
 
 // Use sandbox for testing, live for production
 const PAYPAL_BASE = process.env.PAYPAL_ENV === 'live'
