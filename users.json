@@ -1,0 +1,28 @@
+[
+  {
+    "username": "admin",
+    "firstName": "System",
+    "lastName": "Administrator",
+    "email": "marvingonda@gmail.com",
+    "passwordHash": "$2b$10$PQRNdL4agH53igiWT3l59uPuZpr.rttSK3DPk5lty4A9o0Fmsadse",
+    "role": "admin"
+  },
+  {
+    "username": "marvin.gonda",
+    "firstName": "Marvin",
+    "lastName": "Gonda",
+    "email": "marvin.gonda@agpglobal.com",
+    "password": "$2b$10$pcTiKUdMW5rfRP1W4xF6EOvxni1M67fNbcWc8Ox6taE05rR4eKJ92",
+    "role": "user",
+    "createdAt": "2025-09-25T23:20:58.189Z"
+  },
+  {
+    "username": "jbriones0101",
+    "firstName": "Pat",
+    "lastName": "Briones",
+    "email": "john.briones@agpglobal.com",
+    "password": "$2b$10$pc2Jsa3nrY0t5dKsHfmrR.2Blxp0JYNKeNYY/NWCDYNm5jhyxP7dW",
+    "role": "user",
+    "approvedAt": "2025-10-02T00:16:23.506Z"
+  }
+]
